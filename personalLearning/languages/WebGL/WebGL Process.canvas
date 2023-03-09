@@ -1,0 +1,27 @@
+{
+	"nodes":[
+		{"type":"text","text":"CONSTANT uniforms\n> are the same between all vertices in the same draw cycle","id":"fa9419b76129c19d","x":-40,"y":100,"width":250,"height":160,"color":"1"},
+		{"type":"text","text":"## Vertex Shader\n> gl_Position\n","id":"3d5b6c62e59b69b3","x":-447,"y":-210,"width":360,"height":220},
+		{"type":"text","text":"## Fragment Shader\n> gl_FragColor","id":"2c4afd8efae465aa","x":260,"y":-220,"width":260,"height":240},
+		{"type":"text","text":"attribute a_position","id":"e55c7527cb1a3fcd","x":-377,"y":-40,"width":220,"height":60,"color":"5"},
+		{"type":"text","text":"varying","id":"12cb3e2a1d6c911d","x":316,"y":-260,"width":149,"height":50,"color":"3"},
+		{"type":"text","text":"varying","id":"09e06da8482ff6e7","x":-342,"y":-245,"width":149,"height":50,"color":"3"},
+		{"type":"text","text":"==clipSpace coordinates==\n","id":"73b18f8a70999743","x":-40,"y":-181,"width":250,"height":60},
+		{"type":"text","text":"ARRAY_BUFFER","id":"2635184f795d9cc8","x":-360,"y":210,"width":185,"height":50,"color":"1"},
+		{"type":"text","text":"`gl.drawArrays()`","id":"be3eaf1341282a88","x":-1030,"y":-195,"width":250,"height":60},
+		{"type":"text","text":"ARRAY of vertices (primitives)","id":"1adc34f14faf2758","x":-720,"y":-195,"width":220,"height":100,"color":"1"},
+		{"type":"text","text":"> rasterized approximation of model renders on-screen","id":"91109322e47c9573","x":620,"y":-170,"width":250,"height":141},
+		{"type":"text","text":"textures (2D arrays of data)","id":"1bb238af93fb81f1","x":-56,"y":300,"width":282,"height":50,"color":"1"}
+	],
+	"edges":[
+		{"id":"697d126d24920755","fromNode":"2635184f795d9cc8","fromSide":"top","toNode":"e55c7527cb1a3fcd","toSide":"bottom"},
+		{"id":"523fb0e45aa42bd2","fromNode":"fa9419b76129c19d","fromSide":"top","toNode":"3d5b6c62e59b69b3","toSide":"right"},
+		{"id":"4f950e57050800c2","fromNode":"fa9419b76129c19d","fromSide":"top","toNode":"2c4afd8efae465aa","toSide":"left"},
+		{"id":"e91b1201c11a9cf5","fromNode":"1bb238af93fb81f1","fromSide":"left","toNode":"3d5b6c62e59b69b3","toSide":"right"},
+		{"id":"6d9982c98e0d8fad","fromNode":"1bb238af93fb81f1","fromSide":"right","toNode":"2c4afd8efae465aa","toSide":"left"},
+		{"id":"e9f5055668b43b3e","fromNode":"09e06da8482ff6e7","fromSide":"top","toNode":"12cb3e2a1d6c911d","toSide":"top","label":"must be same name"},
+		{"id":"35d5104fcc8256dc","fromNode":"be3eaf1341282a88","fromSide":"right","toNode":"3d5b6c62e59b69b3","toSide":"left","color":"2"},
+		{"id":"ebfb292a884b63ab","fromNode":"3d5b6c62e59b69b3","fromSide":"right","toNode":"2c4afd8efae465aa","toSide":"left","color":"2"},
+		{"id":"075b9721b2eec29b","fromNode":"2c4afd8efae465aa","fromSide":"right","toNode":"91109322e47c9573","toSide":"left","color":"2"}
+	]
+}
