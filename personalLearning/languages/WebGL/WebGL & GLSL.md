@@ -131,12 +131,31 @@ WebGL (any all other rendering engines) **require** two different shaders: verte
 GLSL has some nice syntactic shorthands that help you cut down on repeating code:
 `vec4 s = sin(v) = vec4(sin(v.x), sin(v.y), sin(v.z), sin(v.w))`
 
-
 >[!matrices]
 > 1. matn
 > 	- mat2 = 2x2
 > 2. matnxm
 > 	1. mat2x4 = 2x4
+
+>[!arrays]
+> not multidimensional, must be created with a size
+> ex. `uniform vec2 u_someVec2[3]` means that we are creating a uniform global, of paired vectors
+> furthermore, this uniform is an array when then contains vector pairs.
+> - we can also reference these indices using the typical array accessor `u_someVec2[0]` for example.
+
+GLSL also supports `struct` types to define custom (grouped) members
+```
+struct Example {
+	bool active;
+	vec2 pairVector;
+}
+
+uniform Example u_thing
+...
+
+// access member of struct with DOT (.) notation
+u_thing.active
+```
 
 ## Vertex Shaders
 
@@ -151,5 +170,37 @@ Vertex shaders run on primitive coordinates, and perform some transformation on 
 		> 2D arrays of data
 		
 - uniforms have special functions associated to the type of uniform you want to set
+	- `uniform1f` for float
+	- `uniform2f` for vec2
+	- ...
 
 ## Fragment Shaders
+
+Fragment shaders are called once per rasterized pixel to calculate the color of the pixel that is being drawn.
+- `gl_FragColor`
+- ``
+
+
+Something unique about fragment shaders is that they can be given data from the vertex shader itself, through *varyings*. 
+- Varyings must be declared (with the same name) between both the vertex and fragment shader
+
+``` Vertex
+
+uniform vec4 u_offset;
+varying vec4 v_positionWithOffset;
+
+void main(){
+	gl_Position = a_position + u_offset;
+	v_positionWithOffset = a_position + u_offset;
+}
+
+```
+
+``` Fragment Shader
+
+varying vec4 v_positionWithOffset;
+
+void main(){
+	gl_FragColor = v_positionWithOffset * 0.5 + 0.5;
+}
+```
