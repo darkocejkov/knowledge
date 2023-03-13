@@ -185,7 +185,6 @@ Something unique about fragment shaders is that they can be given data from the 
 - Varyings must be declared (with the same name) between both the vertex and fragment shader
 
 ``` Vertex
-
 uniform vec4 u_offset;
 varying vec4 v_positionWithOffset;
 
@@ -193,11 +192,9 @@ void main(){
 	gl_Position = a_position + u_offset;
 	v_positionWithOffset = a_position + u_offset;
 }
-
 ```
 
 ``` Fragment Shader
-
 varying vec4 v_positionWithOffset;
 
 void main(){
