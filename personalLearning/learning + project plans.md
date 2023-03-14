@@ -1,8 +1,7 @@
 ## to learn
-
 1. typescript
 	1. ts + react (tsx)
-2. CSS
+2. CSS + SASS
 3. Docker / Kubernetes
 	1. what is it + how to actually use it?
 4. databases & query languages
@@ -17,9 +16,8 @@
 	2. circleCI
 
 ## learning resources + locations
-
-1. linkedin learning
-
+> [[Potential Courses & Certifications]]
 
 ## project planning
 
+1. Course on GLSL + ThreeJS to lead into hands-on creating with models with Spline + Blender
