@@ -356,8 +356,61 @@ Something interesting is that we don't need to hold *everything* we render in st
 > ```
 > to which, on re-renders of state, `fullName` is "calculated" with the *NEW* values of state.
 
+## State is ==immutable==
+In technical JavaScript terms, whenever you define a variable, it is *mutable*, because the value itself that the variable points to, can be mutated naturally.
+However, even though React is built in JavaScript, the structure of "stateful" variables should be treated as *immutable*, meaning that we ==should not edit their values directly==, because React's entire purpose is to manage that for us.
+> This is because we trigger re-renders by updating state, and is why we use React.
+
+Although we may not intentionally change the values of states in mutative ways, we might accidentally do so because certain JS in-built functions mutate the values directly.
+> `Array.push`, `Array.splice`, `Array.sort`, `Array.reverse` ^[https://react.dev/learn/updating-arrays-in-state#updating-arrays-without-mutation]
+> 	These are examples of "in-place" functions, that manipulate the original object.
+> 	Sometimes we can get away with using these functions, but it is bad practice to do so on the original state variable.
+> 	> If we are to use in-place funcitons, we should be creating copies of the objects *before*
+
+### Using "change-drafting" libraries with React
+`Immer` is a library that helps us write simpler code, because we don't have to care about the constraints of how we are changing React states. `Immer` handles all the overhead of copying object properties and contents. It allows us to write simpler code to define exactly what we want to change.
+
+### JavaScript Objects & Copying
+Whenever we "copy" an object, operators like the spread (`...`) create ==shallow== copies of the object. That means it creates a duplicate object of the same type, size, ..., but the contents of any *nested objects* are contained as **references**.
+> This means that we can create a shallow copy of an object, and edit 1st depth properties without modifying the *original*, but editing any nested objects will end up manipulating the originals (because they are references to the original).
+> > What this means is that it becomes too difficult to manage large lists of deeply-nested objects.
+
+### [Flattening Nested Objects](https://react.dev/learn/choosing-the-state-structure#avoid-deeply-nested-state)
+If we want to flatten the structure of an object, we could think about how *databases* do that. They use relational **keys**.
+If we want to transform nested objects, we can borrow that same philosophy and use 1st depth, indexed objects to reference child elements.
+
+
+
 ## Position-based Elements
 We're talking about position *within the DOM tree*:
 - Position within the DOM tree is important, because it may *seem* like a component state is *internal* to itself, it's actually **global** in the scope of React, and it ties it to components based on their position/order within the DOM tree.
-	- Thus, if you de-render and then re-render a component, and it does not change it's position (making sure everything else is the same, such as the parents!) then it *preserves* that state.
+	- Thus, if you de-render and then re-render a component, and it ==does not change it's position== (making sure everything else is the same, such as the parents!) then it *preserves* that state.
+		- It only perserves state between the *same components*, not different ones.
+		- So to perserve state between renders, the entire structure of the component, including any removed parents, must be the same
+		
 	- As soon as the position is lost, like when a *parent* de-renders and removes itself (and its children) from the tree, then the persistence of the state is destroyed.
+> What about forcing a reset even though the structure is the same, how do we tell react to clear that persistence?
+> -> We use *keys* to uniquely identify components, and these keys are what then make the structure different, which cause state to be cleared
+
+## Using Reducers
+Given that you have some data structure or component that handles multiple types of actions:
+- adding
+- changing (editing)
+- deleting
+
+You might have state handlers to handle *each* of them:
+```jsx
+function handleAdd(text){
+}
+
+function handleEdit(){
+
+}
+
+function handleDelete(id){
+
+}
+```
+-> In each of these "handlers" you handle the action by setting the states.
+> -> in `handleAdd`, you set the array in state to have an extra item
+> -> In `handleDelete` you set the array in state to be the the result of the filtered array (without the item to delete)
