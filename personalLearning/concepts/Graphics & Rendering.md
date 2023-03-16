@@ -27,8 +27,6 @@
     
     - Shading / Shaders are written in a specific OpenGL language (GLSL) that is based on C that allows you to fluently describe linear transformations, to display pixels in different ways
 
-# WebGL
+# [[WebGL]]
 
-- Is a JavaScript library based on OpenGL, that uses HTML Canvas elements to center and render scenes for vector-space rendering.
-- WebGL implements OpenGL in the context of the web, and allows browsers to use hardware-accelerated rendering techniques to render more complex scenes, faster.
-- Libraries / Tools such as **ThreeJS** and **Spline** allow you to comfortably write JavaScript in simpler ways that implement WebGL for drawing.
+- Is a JavaScript library based on OpenGL, that uses HTML Canvas elements to render scenes for vector-space rendering.

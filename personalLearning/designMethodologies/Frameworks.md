@@ -4,7 +4,7 @@
 # What are they?
 Frameworks are *abstractions* of other things, meaning that they build on TOP of it. 
 
-Think of the analogy of **building a house**, in which there are many ways you can start to approach it, but the main concern is whther or not we start at a high, or low leve.
+Think of the analogy of **building a house**, in which there are many ways you can start to approach it, but the main concern is whether or not we start at a high, or low level.
 1. **Low Level**
 	1. Secure a plot of land
 	2. Design the entirety of each floor to its nearest 1/4 inch

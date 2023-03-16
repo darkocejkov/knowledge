@@ -57,7 +57,7 @@ thiThe purpose of the `fileBrowser` project is to be able to locally host a back
 	1. Choose only from selected directory
 		1. Option to include subfolders (default ON)
 	2.  Choose only from types in filter
-	3. Ability to pin/unpin files to keep them in randomization
+	3. Ability to pin/unpin files to keep them in the list, randomizing all others
 	4. Display ez-Preview for simple types (images)
 6. UI to allow for walking directories via possible directories
 	1. ex. "C:/" -> C:/ "users/" -> C:/users/"darko"

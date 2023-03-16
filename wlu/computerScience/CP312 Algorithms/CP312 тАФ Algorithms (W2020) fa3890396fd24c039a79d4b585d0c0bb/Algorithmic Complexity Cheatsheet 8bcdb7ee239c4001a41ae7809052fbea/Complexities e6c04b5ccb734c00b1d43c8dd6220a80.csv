@@ -1,0 +1,8 @@
+﻿Algorithm,Worst Case,Best Case
+Insertion Sort,$n^2$,$n$
+Selection Sort,$n^2$,$n^2$
+Merge Sort,$nlogn$,$nlogn$
+Quick Sort,$n^2$,$nlogn$
+Counting Sort,$n+k$,$n+k$
+Radix Sort,$nk$,$nk$
+Bucket Sort,$nk$,$n+k$
