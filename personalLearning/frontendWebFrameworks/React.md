@@ -701,8 +701,7 @@ const count = useRef(0)
 ></button>
 ```
 
-Refs can be passed directly to JSX using the `ref` attribute. 
-
+- [x] Refs can be passed directly to JSX using the `ref` attribute. 
 
 # We've been doing it **all** wrong.
 
