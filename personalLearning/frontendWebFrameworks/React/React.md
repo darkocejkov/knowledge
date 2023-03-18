@@ -1,6 +1,4 @@
 ___
-> Based on personal knowledge, and LinkedIn learning
-
  
 # ? ? ?
 React is a [[Frameworks]] built on [[JavaScript + TypeScript]]. React has very interesting principles that it uses
@@ -210,7 +208,8 @@ Importantly, a *ref* is an object, and whose reference to some value actually li
 ## Custom Hooks
 Hooks are basically just ways to encapsulate repeatable logic. For example, the `useState` hook makes it really easy to define a state with an initial value, and a way to update that state. In the back, it basically creates some class-based component and allows us to *hook into* that functionality.
 
-We can really easy create new, custom hooks to handle *repeatable* behaviour, to group together logic.
+We can really easy create new, custom hooks to handle *repeatable* behaviour, 
+to group together logic. Custom hooks are encouraged to try and reduce the number of times you re-create the same logic in more than 1 place.
 
 ### Philosophy + Breakdown of Components
 In Class-based components, we define a class as the combination of some *members* or variables, which in React, are states. Alongside members, we have *methods* which are the functions of the class, which we can call on instances of that object to act on members of that instanced object.
@@ -312,7 +311,10 @@ I think the **MAIN** reason to use custom hooks is to abstract your complex logi
 3. It encapsulates the design of some logic to allow it to be easily parentable.
 	1. Think of when logic must be shared between children, it is basically required to be stateful within the parent, otherwise you start developing anti-patterns, and is then easily isolated
 
+>[!hot] TL;DR
+> Hooks extract *logic* and use *other hooks*, while ==COMPONENTS== describe the UI. 
 
+Custom hooks are meant to encapsulate and re-use logic. The logic that we may have for dealing with controlled inputs would be the same between duplicated inputs, so we can "extract" this logic into a hook to reduce the amount of "copy-pasting" or how much you "repeat" yourself.
 
 #### Why bother?
 The most obvious example to come to my mind is a time where building a "Chat" component followed the worst path it could have. The requirements of the chat component made it so that it had to be in two different views, but maintaining the SAME state. 
@@ -431,13 +433,6 @@ The entire principle behind React is that we use hooks to create the ability to 
 -> React only invokes functions which *depend* on updated content. All children to updated parents, must also then be updated, because it's a strong assumption that children depend on their parent's states.
 Thus, any time a re-render is triggered, React will invoke all functions to "render" or "calculate" the resulting output when given the NEW state.
 
-## Redundant States
-
-
-## State Synchronously & Flushing
-
-
-
 ## State is ==immutable== (should be treated as -)
 In technical JavaScript terms, whenever you define a variable, it is *mutable*, because the value itself that the variable points to, can be mutated naturally.
 However, even though React is built in JavaScript, the structure of "stateful" variables should be treated as *immutable*, meaning that we ==should not edit their values directly==, because React's entire purpose is to manage that for us.
@@ -469,10 +464,12 @@ Here are the key **principles**:
 	1. If states update together, they are related
 2. Avoid Contradictions
 	1. If there are any states that are mutually exclusive, they should not be *seperate* states.
+		1. For example, an `isSuccess` and `isError` state. Even though you may set them properly, in terms of logic, it opens up the possibility that they could *both* be true and in that case, would not make any sense. 
 3. Avoid Redundant State
 	1. State does not need to be created for things that can be calculated from *other* states at render-time.
 4. Avoid Duplication
-	1. 
+	1. Avoid containing the same objects in two or more states
+		1. like a state containing a list of items, and another state containing the selected item.
 5. Avoid deeply nested state
 	1. gets difficult to detect any changes
 
@@ -701,9 +698,423 @@ const count = useRef(0)
 ></button>
 ```
 
-- [x] Refs can be passed directly to JSX using the `ref` attribute. 
+> [!tips on using refs] 
+> - storing interval/timeout IDs
+> - using element specific node functions
+
+> Refs are basically the same as states, with the *core* difference is the way we manipulate them, they are like states *without* setters.
+
+Refs can be passed directly to JSX using the `ref` attribute, and help us connect directly to the DOM node with a reference to it. 
+This allows us to directly access browser-native node functions like `focus`, `scroll`, attributes like `clientHeight`, etc.
+
+### Forward Refs
+Are how we can "lift" references up to parents, by using the `forwardRef` function to create a component, which allow us to pass a ref to the component. This makes it possible to use DOM APIs from the parent from higher-level events.
+
+### State Synchronously & Flushing
+A very common use of refs is to force the browser to do something in response to an event in React. A simple example is the effect that occurs when adding a new item to an arbitrary length list - what should happen if the list goes off screen? We would want to scroll to the element, and the only viable way to do so is using the `scrollIntoView()` API through `ref` nodes.
+> The problem is when we should be doing this, because when we signal to React to add to the stateful list of items, the newest element is added in the *next* render, so if we attempt to `scrollIntoView()` right after the state setter, the newest element isn't there yet.
+> So, to fix our problem, we use the `flushSync` React API to instruct React what to render *synchronously* within the event handler, and then perform our browser API afterwards, so that when the API runs, it does so only on the *next* render.
+
+```jsx
+	flushSync(() => {  
+		setTodos([ ...todos, newTodo]);  
+	});  
+	
+	listRef.current.lastChild.scrollIntoView();
+```
+
+> [!important] Performing DOM manipulation with **unsafe** functions like removal, or addition can lead to BIG problems with React
 
 # We've been doing it **all** wrong.
+As previously mentioned, the previous philosophy I've approached rendering in React comes from the fact that I thought hooks were meant to mimic class-based components, and "hook" into the lifecycle of components. This is true, but the missing piece is that functions are invoked, and are not instantiated by objects. When React would like to re-render, it invokes each component's functions and uses the JSX returns to piece together the resulting DOM for the next commit.
+
+Effects were effectively used as chains of operations when states would be changed, which is entirely not how they are meant to be used as hooks. The next [[#Effects]] section will clarify *how* to effectively use *functional* effects.
 
 ## Effects
+React has two logic types:
+1. **Rendering code through JSX**
+	1. given states and values, functional components *compute* and *return* the rendering code
+2. **Event Handling**
+	1. Functions given to components to do things in response to an event
 
+==Effects== are functions that let us specify any side-effects that occur AFTER rendering, and not in-response to an event. Events and their handlers handle changing of state, but on the next render, there may be a *side-effect* of that change.
+-> Effects are triggered at the ==end of commits==, which is after browser paint, on the next render.
+
+> Effects are meant to be used only to "step out" of React to **synchronize** some external system to the state of react. 
+-> This knowledge is my largest predicament, as the way that effects have been classically used are to update other states or to trigger calculation when data arrives and we want to store that calculation in a state.
+-> This is precisely why the previous designs would basically treat functional components as class-based components, but built in functions. It was an entire anti-pattern, but it still worked.
+
+```jsx
+
+useEffect(!function, ?[dependencies])
+
+
+useEffect(() => {
+	//runs on EVERY render
+})
+
+useEffect(() => {
+	//runs only after the FIRST render
+}, [])
+
+useEffect(() => {
+	//runs only after "state" has changed
+}, [state])
+
+```
+-> Effects are tested on *every* render to see if they *should* run. Effects with **dependencies** only run after renders in which their any one of their dependencies have changed
+> Effects with multiple effects do not run if NONE of their dependencies have updated
+
+
+
+### When TO USE effects:
+1. Attempting to synchronize with non-React systems
+2. When fetching data* [[#Data Fetching]]
+
+### [When to not use effects](https://react.dev/learn/you-might-not-need-an-effect):
+1. Updating state within effects, transforming data for rendering/display
+
+Since effects run AFTER the commit, running an effect to set another state causes a new re-render, which causes a *chaining* of re-renders, because setting state automatically triggers re-renders, which then trigger effects, etc.
+```jsx
+
+const [data, setData] = useState()
+
+// BAD
+const [filtered, setFiltered] = useState()
+useEffect(() => {
+	setFiltered(data.filter(...))
+}, [data])
+
+// GOOD
+const filtered = data.filter(...)
+
+// GOOD (IF OPERATION IS SLOW)
+const filtered = useMemo(() => {
+	return data.filter(...)
+}, [data])
+
+```
+-> useMemo allows you to skip unnecessary calculations, so you tell React only to re-calculate when a dependency has changes
+
+
+2. In response to changes of other events to "reset" or change states
+> Like in the previous point, using effects to reset or manipulate states as a result of state changing is an anti-pattern, because it results in more render updates then necessary.
+
+If we would like to *reset* states, we can do so by de/re-rendering components, or being more intelligent and providing unique `key` to components (covered in [[#Position-based Elements]]). 
+
+### Storing previous states
+Storing previous states should not be used often, but we can still do this while maintaining good design patterns in React. It is mostly done as another way to respond to changes in other states to avoid using Effects to accomplish it.
+To store previous states, we must create some state to store it. Uniquely, we should be calling this *during render*:
+```jsx
+
+const [prev, setPrev] = useState(items)
+if(items !== prev){
+	setPrev(items)
+	setSelection(null)
+}
+
+```
+-> Why is this okay? Because it's efficient in how it *skips* the rest of the render cycle. With effects, a full render occurs, the changes are commited, then the effect runs, and triggers another render + commit. 
+-> Updating state directly in the render (although, should definitely be conditional) throws away the current render cycle on the return and triggers an immediate re-render.
+
+3. Computation Chains
+It's very simple in terms of logic and tempting to use effects that trigger on changes of other states, to calculate states based on rules (like a game, or process, or sequence of events). However, this is really stupid when we consider that for each state update, the component is re-rendered.
+The whole point of states and functions as render is that each render is a 'snapshot' of states and what should be rendered - so requiring states to update in the *next* render to cause *another* render is just bad practice/logic. Most of the time, we can *calculate* the state using the current one, instead of trying to set a state.
+-> There are times when chaining **IS** necessary, like when the previous state does influence the next one.
+
+4. Initalizing the application
+Instead of using an effect on mount (to mimic `componentDidMount`) to check auth or something like that, we can just run our init. functions *before* the app loads (on module load)
+
+5. Synchronizing data between children & parents
+Requiring to "sync" data between children and their parents is just bad logic, because the ultimate way that React components should respond to events is like this:
+> Child bubbles, Parent handles.
+In the case that the parent *does not need* the information, then there's no need for this sync to occur. But once the parent does need the information, it's just much simpler to have the parent handle the event, and pass down the information to the child.
+
+6. Notifying parents of state changes
+This one is a little more nuanced then just making the parent handle the state change itself, because it is still okay to notify parents of state changes. It's *inefficient* to do so within an effect, because it takes more than 1 render cycle to update parent's state in response to a child state update.
+The more appropriate way to signal state changes to parents is to instead directly call the parent's passed down `onChange` function (whatever it may be) when the state is *supposed* to change:
+```jsx
+function Child({parentChange}){
+	// BAD
+	useEffect(() => {
+		parentChange(state)
+	}, [state])
+
+	// GOOD
+	function updateState(next){
+		setState(next)
+		parentChange(next)
+	}
+}
+```
+-> The reason this is efficient is that React can tell that you are updating the child component's state AND its parent, and **batches** their updates together, so it takes 1 render cycle for the state for both to change, rather than 2.
+
+Overall, we should stick to these guidelines when dealing with states:
+1. Only manipulate state in the event of a user action
+2. Only use effects to synchronize external (non-React) API states with React's state
+
+## Effect Cleanup
+All effects can return a *cleanup* function, which allows you to perform cleanup on things that happen within the effect. These are most often used when performing doing things asynchronously to change flags or to issue disconnects for data streams.
+
+```jsx
+
+useEffect(() => {
+
+	// SETUP code
+	const connection = createConnection()
+
+	// CLEANUP functions
+	return () => {
+		connection.disconnect()
+	}
+}, [dependency])
+
+```
+
+This is the order effects run in:
+1. On mount, setup code runs 
+2. After any re-renders, if any *dependencies* have changes, it re-runs the side-effects
+	1. `cleanup` (to cleanup any side-effects of the setup code)
+	2. `setup`
+3. When the component is going to unmount, it runs the `cleanup` function once more.
+
+> In React Development mode (StrictMode), React calls all functions TWICE.
+> So it is common to see effects happen twice in 1 render, but only in StrictMode.
+
+### LayoutEffect
+Is an escape hatch for effects that lets us run the effect **BEFORE** the browser *repaints* the screen, meaning we can perform layout changes based on the new render information, but change states meant for dynamic content.
+> An example is the need to `useLayoutEffect` for tooltips to set the height of the tooltip, because we need to know the height of the rendered tooltip to perform some React-specific rendering with that information.
+
+## Effect Lifecycles
+Effects are meant to synchronize React's states to some other (external) system, like some other API that React cannot interact with itself, like browser function APIs or data endpoint APIs.
+The lifecycle of an effect is *meant* to use cleanup functions (whenever needed) to keep the state of React in sync with that external system. 
+If an effect is dependent on some state, it will trigger after rendering, whenever its dependency changes. Whenever an effect re-fires after it's first initial setup, it calls the cleanup function (which is created as a "snapshot") when the setup first ran, so it can use the ==old== value.
+Then, it runs the setup code to re-sync to the new updated render state.
+On unmounting the component, the clenaup functions run one last time.
+The point of this being is that it's useful to think of an effect's lifecycle in the perspective of the effect itself, and NOT the component's lifecycle.
+
+> Essentially, React code should be **declarative**, in which you are describing the UI and the effects while React figures out how to do that. This is instead of the **imperative** way of thinking, where you *tell* React how to accomplish that.
+
+## Effect Events (experimental)
+Effect events are handy little hooks that allow you to declare *events* to use within effects, they are basically like event handlers. Their purpose is that they "detach" the reactivity from certain states, so that Effects don't trigger on changes in any states used in the Effect Events.
+For example, imagine we have some component that uses effects to connect (and cleanup by disconnecting) to some API. If we wanted to include the addition of some extra state information, like themes/colors/etc, using those states results in that effect firing on changes to it - which are not ideal for the API. We can use effect events to wrap any reactive values to make the effect not trigger for changes in those, but they maintain reactive in the sense that we can continue to "see" the latest value.
+```jsx
+
+const [isDark, setIsDark] = useState(false)
+
+<Chat id={...} theme={isDark}/>
+
+const Chat({id, theme})
+
+const onConnect = useEffectEvent(() => {
+	showNotification('connected!', theme)
+})
+
+useEffect(() => {
+	const connection = createConnection(url, id)
+	connection.on('connected', () => {
+		onConnect();
+	})	
+}, [id])
+```
+-> Effect *events* are basically ways to define ways to "read" the current value of a state, without initiating a sync effect trigger.
+Of course, this depends on the principle of the event itself and the relationship between these states. If you want to POST to an API whenever a user changes the *URL route*, the effect requires the dependency of the URL. If you suddenly wanted to add in other information, like cart items, metadata, etc., then the effect depends on those *reactive* properties, and starts to fire not only when the URL changes, but when those other reactive properties do - which is not the intention of the sync action. That's what **effect events** are attempting to create as side-effects, ways to "read" the value without reacting to its changes.
+
+Effect events should not be:
+1. Called from anywhere ==except Effects==
+2. Passed to other hooks/components.
+
+## Effect Checklist
+1. Effects listen to REACTIVE states to keep in sync between React states and whatever other external system is used.
+	1. If we *prove* or *define* **constant/non-reactive** "states" or variables, then React does not need them to appear in the dependencies of an Effect
+2. Effects should define how to *start* the sync, and how to appropriately *stop/cleanup*. 
+3. Should only be dependent on states tha are *necessary* for the sync, any other states just cause re-triggers.
+4. Code in Effects that is more of a response to a single, discrete *event* should be in *event handlers*, and not Effects.
+	1. ie. Cut out the *middle man*, why bother having a "submitted" state to trigger a code in an effect, when you can trigger the code directly
+5. Utilize local variable flags to cleanup any data fetches
+6. Effects should be single, atomic logic that is *related* to a single sync operation. Just because two syncs might use the *same dependencies*, you can seperate them.
+7. Use **updater functions** to define how states should be set. 
+	1. This one is a little more nuanced, but if we are using an effect to create/sync some connection, and must define callbacks within the effect for that connection/resource, then using the *original* states creates an unnecessary dependency, when we could just define a *function* (like a reducer, etc).
+8. Use Effect events to "read" but not "react" to state changes within Effects.
+9. Trying to mimic "lifecycle" events is more of a class-based component, trying to do so with Hooks results in bad code that can introduce weird bugs.
+10. 
+
+
+### Functions as operators, not state readers
+> As a sidenote, supplying the values of states to functions that are called makes development more cleaner, because a function is *meant* to take parameters and operate on them - not just use "global" state. 
+> Of course, it depends entirely on the paradigm of the application and the ways that state is set. Always be mindful about the differences between *accessing* state, and *passing* state. 
+> this becomes ESPECIALLY important when we have asynchronous logic. If a function depends on the value of a state, and that value changes before it's used, then we may be getting a different result.
+> ```jsx
+> 	const [url, setUrl] = useState('/')
+> 	const visit = () => { window.location.href = url}
+> 	
+> 	setTimeout(() => {
+> 		visit()
+> 		visit(url)
+> 	}, 5000)
+> ```
+> > What happens when the 5000ms passes and the function without arguments runs, there may be a time when this could cause a different URL to run other than the *intented* one.
+> > If we supply an *argument*, it effectively sets the callback in the timeout function to be "replaced" with the *current state* when the callback is created, which leaves NO room for error.
+
+Effects should be declarations of single effects, and even though some synchronization actions *depends* on the same state or prop, you should seperate them if they are totally seperate actions. Each effect is an **independent synchronization process**.
+
+Effects are also aware of "reactive" states and variables. Even if you reference a variable within an effect, that's not in the dependency array, whether or not you are writing a valid effect depends on if that variable can change.
+-> Calculated properties *from* states and props are considered reactive
+- So, if a state changes, any calculated/memoized values that depend on it will be re-calculated. However, even if the state it depends on changes, that calculated value *may not change* (depending on what it is):
+```jsx
+const [state, setState] = useState(0)
+
+const gt5 = state > 5 ? 'Yes' : 'No'
+
+useEffect(() => {
+	fetch('...')
+	//if state changes and does not result in a change in gt5
+	//then this effect does NOT run
+	//ex. state = 6 -> state = 7
+		// gt5 = 'Yes' -> gt5 = 'Yes' 
+}, [gt5])
+```
+-> Mutable values are *not* reactive, this is because they are don't trigger re-renders like react states do. Even if you include them in dependencies, they don't trigger re-renders, and thus, do not trigger sync effects.
+
+Thus, this *declarative* vs. *imperative* shift in perspective is exactly why the effects I've written are very poor in logic, because Effects don't really care about the Lifecycle of the component, but rather the states that it depends on. After all, this "effect" is not a method of a class, but a function depending on a hidden conditional statement: whether or not at least 1 dependency changed.
+-> So, effects with "empty" `[]` dependency arrays don't necessarily mean to run "when the component mounts", but rather it has no dependent, reactive states, so it will *correspond* to running only on component mount/unmount.
+
+## Subscribing to an external "store"
+There are many built-in browser APIs to help to connect information about the client to JavaScript, like the `navigator.onLine` API to give information about whether or not the client [browser] is connected to the internet
+This *was* normally done with Effects, but there is a hook built specifically to "subscribe" to changes in these stores of information, provided by the hook `useSyncExternalStore`. 
+```jsx
+	function subscribe(callback){
+		window.addEventListener('online', callback)
+		window.addEventListener('offline', callback)
+
+		return () => {
+			window.removeEventListener('online', callback)
+			window.removeEventListener('offline', callback)
+		}
+	}
+
+	function useOnlineStatus(){
+		return useSyncExternalStore(subscribe, //what to do 
+			() => navigator.onLine, //getting value on client
+			() => true, //getting value on server
+		)
+	}
+
+	function ChatIndicator(){
+		const isOnline = useOnlineStatus()
+	}
+
+```
+A "store" is really like some external variable, like anything we can access in `navigator`, `window`, etc. 
+-> This hook allows us to hook into these variables rather than attempting to manually listening to them using effects. Why? because Effects are functions that are meant to be **pure**, and mutable stores/values do not trigger re-renders, so there may be renders where the results are different than expected.
+
+## Effects vs. Events
+Effects are meant to *synchronize* between changes in STATES and EXTERNAL resources. Again, they are NOT meant to synchronize states with OTHER states,  they are not methods to detect changes in state to create a CHAIN of computation, but rather should ONLY be synchronization.
+Effects should typically be independent of SPECIFIC events, effects are the result of external events firing, updating state, then triggering the effects (on the subsequent) render.
+Most effects are then independent of a *single* event, but rather a collection of them - it doesn't matter what the user clicks, drags, pans, etc. The effect should run regardless of those and only if the effect needs to sync a state with something external.
+
+Effects are *reactive* to changes in reactive states, while Events are not *reactive* to state, but rather to browser events (clicks, scrolls, etc.)
+
+## Data Fetching
+Data fetching is a real complex subject, because to do data fetching *well*, we need a LOT of infrastructure in our React components and logic to be able to handle data. 
+Of course, if we're handling just small amounts of data, in-frequently, then it's really okay to proceed with an inefficient or non-scalable method to fetch data. But, the more data we need, the more complex it becomes since we then need to start caring about the arrival of data, the way we cache data, cancel requests, data validity, etc.
+
+### The basic way
+Using an Effect is a valid way of fetching data, because we *are* synchronizing or using an external system outside of React, and effects are really simple ways to attach changes of state to API calls. 
+> Of course, some API calls are *meant* to happen only on events, and not effects. Like submit buttons, search buttons, clicks, etc...
+
+Here's a solid example of how data is fetched from within an effect:
+```jsx
+
+useEffect(() => {
+	let ignore = false
+	async function fetchData(){
+		const json = await fetchUser(id)
+		if(!ignore) setData(json)
+	}
+
+	fetchData()
+
+	return () => ignore = true;
+
+}, [id])
+
+```
+-> This simple example is a very easy way to understand how to proficiently use basic API calls from within `useEffect`.
+-> The main takeaway is that given an effect is specific to interaction on a component, if something occurs between starting the data fetch and the time the fetch arrives with data, that would most likely 'invalidate' our data.
+- If the user navigates away and the component unmounts, the data would still arrive and set the state even though the context may change and that data is not needed, or is invalid.
+- Thus, using cleanup functions, we can automatically invalidate data we fetch that is not relevant.
+	- We can also [abort](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) the fetch using browser APIs.
+
+### Harnessing parallelism for React data fetching
+Instead of requiring the previous fetch to complete before starting the *next* one (which creates #waterfalls, through component mounting and prop requirements), we can propagate all fetches to occur at the top-level of our component.
+-> Instead of having them occur synchronously, we can use the Promise API:
+```jsx
+
+// PARALLEL
+// states are set only when the LAST promise result resolves
+useEffect(async () => {
+	const responses = [a, b, c] = await Promise.all([
+		fetch('/a')
+		fetch('/b')
+		fetch('/c')
+	]).map(r => r.json())
+
+	const [aData, bData, cData] = await Promise.all(responses)
+
+	setA(aData)
+	setB(bData)
+	setC(cData)
+}, [])
+
+// PARALLEL
+// states are set only when EACH of them resolve
+useEffect(async () => {
+	const responses = [a, b, c] = await Promise.all([
+		fetch('/a').then(data => data.json()).then(data => setA(data))
+		fetch('/b').then(data => data.json()).then(data => setB(data))
+		fetch('/c').then(data => data.json()).then(data => setC(data))
+	])
+}, [])
+
+```
+-> Why does this work? because they all start their fetches simultaneously (or when possible, but the `.all` method takes care of this...)
+
+#### JavaScript breakdown:
+- `Promise.all()` takes a list of promise-based functions and returns their results
+- `r.json()` is a promise-based function, so mapping each fetch resolve to it's `json()` promise puts promises into that array
+- then, we can run the `Promise.all()` method once more on this array of promises to get the resulting JSON data.
+
+
+### Why shouldn't we use effects for complex data fetching?
+1. Effects require states and re-renders, so there's no "pre-loading"
+2. Without a caching system, data fetches can occur often and inefficiently
+3. Since fetching is a result of component mounting, the order of mounting and render will cause "network waterfalls" as only the child component renders and starts fetching when the parent *finishes* fetching.
+	1. Running requests in parallel (if possible) is limited to 6 requests at once (if HTTP1)
+
+
+### Why is native React data fetching so difficult to perfect?
+React is a framework built to make UI much easier and organized through components and states. It's not necessarily meant for dynamic data and content, but supports it. You can definitely build a really robust data-fetching method *only* with React.
+There are a lot of pitfalls when using only React, and lots of implementation to add if you want to optimize *how* and *when* you fetch data. It's good to know how you can opt-in to doing custom data fetching techniques, but as an app grows and becomes much more complex.
+
+### Data Fetching packages
+- `useSWR`
+	- built by Vercel, same who created NextJS
+- `React Query`
+- `React Router (^6.4)`
+- ...
+
+## React Frameworks
+Believe it or not, there are **React** [frameworks](https://react.dev/learn/start-a-new-react-project#production-grade-react-frameworks) that build on-top of React:
+1. NextJS
+2. Remix
+3. Gatsby
+4. Expo (Native)
+
+### Why?
+They pre-implement a lot of the stuff that you would normally need for full-scale applications. 
+-> For example, React only builds you a UI and interactivity between JS and DOM elements.
+- To achieve routed paging, you need to install `react-router-dom`.
+- To achieve API fetching, you can install `axios`.
+- etc, etc, etc.
+The point being is that these frameworks already have these features built-in, so there's no installing to do for these features.

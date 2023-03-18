@@ -82,7 +82,7 @@ greet("abc", Date())
 		// Date() returns a STRING, and not a Date object
 ```
 
-## Implicit Typing
+### Implicit Typing
 
 TypeScript can also ******assume****** the type of a variable based on the actions taken on it. If we assign 
 
@@ -92,7 +92,7 @@ let message = "message"
 
 and assign nothing else to it, then TS knows its a string type.
 
-## Type Erasure
+### Type Erasure
 
 TypeScript is compiled down into JavaScript, so it’s an extra layer, and in order for that code to be properly interpreted as JS, the typing is simply for static typechecking while writing code, and is erased when compiled into JS.
 
@@ -124,8 +124,7 @@ because of the different versions of ECMAScript, templating strings and syntacti
 
 </aside>
 
-## Strictness
-
+### Strictness
 - If we want TS to only use explicit typing and NEVER infer the `any` type, we can use the `noImplicitAny` flag to disable that
 - we can enable null and undefined strictness using `strictNullChecks`
 
@@ -210,8 +209,7 @@ function printId(id: number | string)
 
 ### Type Alias
 
-a way to globalize the definition of a type
-
+a way to globalize the definition of a type:
 ```tsx
 type Point = {
 	x: number;
@@ -228,6 +226,27 @@ function fun(input: string): String2
 //JS interface
 interface Animal{
 	name: string
+}
+
+interface Contact{
+	name: string
+	id: number
+	birth?: Date //OPTIONAL, not all Contacts require
+	status: ContactStatus
+}
+
+//these enums get mapped to integers
+enum ContactStatus{
+	Active,
+	Inactive,
+	Deleted
+}
+
+//these enums get mapped to strings
+enum ContactStatusStrings{
+	active = 'Active',
+	inactive = 'Inactive',
+	deleted = 'Deleted'
 }
 
 interface Bear extends Animal{
@@ -309,3 +328,42 @@ function liveDangerously(x?: number | null){
 ```
 
 the postfix syntax of `!` is a null/undefined check, almost identical to optional chaining
+
+## Return Types
+```tsx
+
+function clone(obj: Contact): Contact{
+
+}
+
+```
+
+## Generics
+Generics are special ways to denote *dynamic* types. Think of generics as a 
+
+```tsx
+
+function clone<T1>(source: T1): boolean{
+	...
+}
+
+function clone<T1, T2>(source: T1): T2{
+	...
+}
+```
+-> This is a way for us to define generic types defined within the `<>` syntax.
+-> Generics can be named anything, as-in a new-type, or an existing type.
+
+-> We can use those types to denote return and argument types, especially when the specific type doesn't matter, but the order and return.
+
+## keyof
+```tsx
+type Point = {x: number, y: number}
+type P = keyof Point = "x" | "y"
+```
+-> Represents the literal union of the keys of the type
+
+## typeof
+```tsx
+
+```
