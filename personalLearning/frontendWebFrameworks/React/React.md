@@ -45,7 +45,7 @@ React.createElement("div", null, children?)
 > Which is not a) intuitive and b) any easier.
 
 ## Bundling
-When writing code in React, all the important code ends up in JavaScript files. Since JS is [[Object-Oriented Programming]] (classes, objects, inheritence, blah-blah), its can be dynamically linked,
+When writing code in React, all the important code ends up in JavaScript files. Since JS is [[Object-Oriented Programming OOP]] (classes, objects, inheritence, blah-blah), its can be dynamically linked,
 - You can encapsulate functionality between different files, folders, etc.
 However, it's not in the best interest of servers to have to send hundreds of files (regardless of size, even if tiny, still not good), especially when you use external packages. So, in order to make it more efficient to send over the necessary files for your application, you can **bundle** all those JS files into a single "bundle" (which *can* be chunked into smaller bundles). 
 - Bundlers can be passed external options to configure *how* to bundle and minimize your code.

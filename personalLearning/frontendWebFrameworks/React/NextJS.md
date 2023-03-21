@@ -97,6 +97,12 @@ Are considered as pre-rendering methods, because they are rendered *before* the 
 Client-side rendering is dependent on using the host's browser to compute and render the graphics, then display it. The idea is that we pass them some empty HTML - then the generated instructions (from React) on how to render and display each page, component, etc.
 -> So, there is a period of time in which our app has virtually no meaningful content other than the basic, root HTML that it populates.
 
+### Why?
+Given that each browser is different and implements forms of JavaScript and HTML runtimes themselves (although it is a *standard*, there are still unique differences and bugs), and even within a single browser, versions and updates change how those are implemented and bug-fixed. Creating a completely universal JavaScript runtime for each browser that does *exactly* the same between all browsers is just ... impossible. HTML & CSS however, are comparatively simpler standards. 
+Generating HTML on a consistent and controlled server machine, and sending that to requesting clients offloads the work they must perform. 
+> Also, if an app/page is client-side rendered, then any following network requests for API/Database data depend on the network connection of the client. This presents a bottleneck for the application, because we can again, offload this work to the server, and fetch all necessary data for the HTML, then send it. 
+> In general, this creates a MUCH more responsive and interactive application, because even if the client must wait for hydration, or client-side data fetching, then *at least* they can see something.
+
 ### Server-Side
 Server-side rendering in specific, means that each page is generated on the server (each request), so we pre-render meaningful content, and then pass to the client:
 - HTML
@@ -124,5 +130,66 @@ The NextJS application can be distributed over 3 types of networks:
 	1. Edge servers are similar to CDN networks, they are distributed and serve cached content
 	2. Unlike CDNs, they are still servers that can execute code.
 
+# NextJS Documentation
 
+## Page Routing
+URL Routing is pre-configured in NextJS and is available very easily. In any `create-next-app` applications, a `pages` folder comes pre-filled with the `index.js` file which exposes the ROOT (`/`) to the attached file.
+> To create any other pages, we simply create new *files*, whose FILE NAME is what the new route depends on.
+> Likewise, if we want to create *subfolders*, we very much can, which let us create *subroutes* easily
+> ex. (pages) > ("Travel") > ("Food") > ("Indian") ("Chinese") ("French") ("Canadian")
+> > /travel/food/indian vs. travel/food/chinese vs ...
+
+Just like in `react-router-dom`, we can't just use normal < a > tags to navigate because it does not work well with SPAs. In order to navigate *between* "pages" we should be using the `Link` component provided by Next.
+
+Next also provides an additional format to use if we would like to define *dynamic* routes based on parameter "queries". To routes and pages like this, we can create filenames with the format `[route].js`. This defines this "route" as having a dynamic query attached to it.
+
+> To use the *dynamic value* of the route at runtime, we need to the the `useRouter` prebuilt hook to access the `router` state, which we can destructure to give us the *token name* that our filename describes.
+
+## Data Fetching & Pre-rendering
+NextJS comes with plenty of options when it comes to fetching data from servers. We can do client-side data fetching with React as per-usual, or `useSWR` for some advanced features.
+
+Data fetching in general is much more robust and configured in NextJS because it's meant to support *pre-rendering*. So not only can you use client-side data fetching for interactions, you can do much more advanced page rendering.
+
+### Pre-rendering
+As a recap, pre-rendering is the *general concept* of having your app generate HTML for requested pages ON THE SERVER. This is in constrast to something like React - which is client-side rendering, because any server that passes your web application (built in React), passes along the ENTIRE instruction-set to "build" your application.
+
+Pre-rendering adds that abstraction so that instead of passing along to the requesting client the entire bundle (or chunks of it), they "request" a page, and if the page is configured for server-side rendering, the server will run all the necessary functions to fetch the data to build that page, then send over the necessary HTML, CSS, and JS.
+> something VERY important is that this concept of server-side rendering is made more efficient by going halfsies with client-side rendering. Instead of relying on *solely* server-side, the best approach uses **hydration**, in which the server generates the base HTML based on content, and passes along the files, which when arriving at the client, then get client-side rendered to handle interactivity.
+
+Also, there's a big difference between the two types of pre-rendering:
+1. Static Site Generation
+2. Server-Side Rendering
+
+**Static site generation** is a tactic that is meant for pages with do not depend on dynamic content like user input, because they are *built* and served like static pages. You *can* create "static" pages based on dynamic content from APIs, Databases, etc ... the point is that when your App is built, these pages are like generated as "snapshots" that aren't meant to change often or respond to dynamic input.
+
+On the other hand, **Server-Side Rendering** responds to some user input like a dynamic page/route that will trigger the server to offload the generating work to the 
+
+### getStaticProps
+The process of pre-rendering in NextJS is quite simple, and in the case of static-site generation, we include a function in our pages called `getStaticProps`.
+
+When this function is included in a page's file, that page is then marked as a "static" page, so any pages that contain `getStaticProps` are meant to be generated at BUILD time. When the app is built, the builder will generate static HTML / JS for these pages by running the `getStaticProps` function and getting all "static" API data.
+
+> [Incremental Static Regeneration](https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration) is an additional feature for statically generated pages that allows static pages to be re-built periodically/on-trigger without re-building all other static (or non-static) pages.
+
+Detailed Example:
+```jsx
+export default ({results}){
+	{results.map(x => ...)}
+}
+
+export async function getStaticProps(){
+	//do data fetching tasks
+	const response = await fetch(url)
+	const data = await response.json()
+
+	return{
+		props: {
+			results: data.results
+		}
+	}
+}
+
+```
+
+### getServerSideProps
 

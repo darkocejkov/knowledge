@@ -1,0 +1,16 @@
+{
+	"nodes":[
+		{"id":"9b87aa729326f28f","x":-307,"y":-480,"width":340,"height":80,"type":"text","text":"> Running JavaScript on Host machines"},
+		{"type":"text","text":"Host Machine","id":"e7ca3fc6043a6284","x":-214,"y":-320,"width":178,"height":50,"color":"5"},
+		{"type":"text","text":"Host Machine","id":"b6a78a1c8c6361dd","x":-214,"y":20,"width":178,"height":50,"color":"4"},
+		{"type":"text","text":"JavaScript","id":"d5f1368bb1be52c4","x":-202,"y":-143,"width":154,"height":50},
+		{"type":"text","text":"Host Machine","id":"be4d36bc9c9f6629","x":160,"y":-60,"width":178,"height":50,"color":"3"},
+		{"type":"text","text":"Host Machine","id":"6aba04783bc220a5","x":-520,"y":-240,"width":178,"height":50,"color":"2"}
+	],
+	"edges":[
+		{"id":"9e25ecbb19551a40","fromNode":"d5f1368bb1be52c4","fromSide":"top","toNode":"e7ca3fc6043a6284","toSide":"bottom","label":"supports only ES2"},
+		{"id":"b84b53a53b5c28e5","fromNode":"d5f1368bb1be52c4","fromSide":"right","toNode":"be4d36bc9c9f6629","toSide":"left","label":"does not support certain CSS"},
+		{"id":"a16f976a499de850","fromNode":"d5f1368bb1be52c4","fromSide":"bottom","toNode":"b6a78a1c8c6361dd","toSide":"top","label":"supports ES6 but no polyfills"},
+		{"id":"48513dd8d76c999d","fromNode":"d5f1368bb1be52c4","fromSide":"left","toNode":"6aba04783bc220a5","toSide":"right","label":"supports only ES5"}
+	]
+}
