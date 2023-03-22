@@ -26,7 +26,74 @@ Interface for creating objects in superclass, whose *subclasses* offer ways to a
 The problem is that if you build your app in a way that depends on specific classes, rather than broad ones, you then box yourself off from easily adding new types of input. 
 Classes should be structured such that any core input should extend some interface that groups commonalities between input, what is *really* important about inputs. So, any usage of those inputs are "blackboxed" to the methods that use them.3
 
+## Builder
+Builders are design patterns that are meant to get rid of the following:
+1. Long parameter lists
+2. Too many subclasses
+Instead of creating some constructor that takes so many different parameters, we shift the perspective into creating builder *methods*, which we can use to "build on" objects.
 
+The example here is that we have a base class like a House, and instead of running `House(2, 2, 2, false, true, null, null, null, true, 4, 5, null, false, true)`, we can run various builder methods to add onto a `House` object.
+
+The builder pattern can be extended by adding a *Director* class, which essentially orchestrates order in the steps of building.
+
+## Prototype
+A way to create "copies" of existing objects without making code dependent on the classes themselves. The first idea about creating clones might be do deal with all the overhead and create some way to copy all values all values of the original object, one-by-way, onto a new object. 
+That plan starts to fall apart when there's limitations on how we can access certain fields - if we create a cloner class and it can't see *ALL* the fields / methods, we cannot possibly clone all those fields. Not only that, but the cloner now depends on the class itself and not for any other classes.
+
+The key factor is to implement a superclass that parents all child classes. The superclass only needs a clone method, which each class implements themselves. This shifts the responsbility of cloning to the subclasses, because they can access private fields, and don't link other classes to that one.
+
+## Singleton
+A class that has only *one* instance, with the ability to be a "global access point" to that instance. This is typically something built out of a constraint that there must *only* be ONE instance, for a shared resource. Instead of creating multiple instances that link a shared resource and make it impossible to sync between those instances, just have 1.
+
+The biggest problem with this pattern is just constructors are *meant* to create `new` instances, and that any global references to that single instance are possibility volatile. The solutions are to control creation as a method of the class itself, and implementing logic that serves as both a `new` creator (if no instance exists), otherwise returning some reference to the instance.
+
+# Patterns: Structural
+	Assemble objects into larger structures
+
+## Adapter
+Objects with *incompatible* interfaces *should* be able to interaction. We create adapter interfaces to wrap objects to expose the type of data we want. For example, if we have some object that contains address information, but we need information in a more absolute way for some extension, then we can create an adapter class that takes relative positions (like addresses) and turns them into absolute positions such as lat/long.
+
+## Bridge
+Splits large classes, or sets of related classes into two seperate hierarchies, the idea of *abstraction* and *implementation* that are developed independently.
+Instead of developing the hierarchy of a class in more than 1 dimension, that is - subclasses are variants of more than 1 dimension (shape AND color = redCircle, redSquare, blueCircle, blueSquare, etc.), we can use the *bridge* pattern to compose rather than inherit these traits.
+
+Bridges seperate a large concept into an **abstraction** layer, and an **implementation** layer. Similar to model-view-controller principles, we develop an abstraction layer to seperate complex under-the-hood operations. The easiest real example is the idea of a GUI as the abstraction, versus the underlying API of classes, functions, and members that implements what the GUI represents.
+
+Without the pattern of bridges, you are creating a monolothic structure that is vulnerable to changes, because there is no abstraction vs. implementation to focus changes onto, but any changes can affect both in the monolothic.
+
+In essence, this pattern promots the idea of creating your own framework, because you create a bridge/abstraction. 
+
+## Composite
+Composing objects into trees with the ability to treat each node as an individual object. This pattern owes itself to *recursion*, because the point is that we have some nested objects, and instead of creating a complex way to traverse the tree externally, we can use recursion to our advantage and traverse the tree with very simple subproblems. 
+
+	Why create an algorithm that examines all levels of the tree at once, when a much easier subproblem is to accomplish a simple task, then pass it down?
+
+## Decorator
+Decorators are extremely useful, because they attach behaviours to objects by wrapping them in other objects. I guess it's similar to adapters, but instead of requiring this wrapping to interact with other objects, we wrap objects to pass down behaviour, like the ability to give a `Dog` class, the ability to `meow()`.
+-> This bypasses several constraints of inheritence, as inheritence is a static (class-based) approach, in which we can't really change at run-time the inheritence of an object, and subclasses can't inherit from more than ONE parent. 
+A `shepard`, child to `dog` can't also be a child `cat`. 
+
+Instead of inheritence, we can use *aggregation* or *composition* of objects to create **references** to other objects to delegate work.
+
+### Aggregation
+A contains B, but B can live *without* A.
+### Composition
+A consists of B, where A manages the lifecycle of B, and B *cannot live without* A.
+
+These class wrappers are implemented such that the wrapper class links a target object and delegates work, but also can "inject" behaviour.
+
+![[Pasted image 20230321122900.png]]
+> Here, the BaseDecorator is the wrapper, while specific decorators are subclasses to it. The BaseDecorator itself is a subclass to the class we want to decorate.
+
+## Facade
+A simple interface for some library, framework, or set of classes.
+In a real example, it's identical to the front-facing interfaces when dealing with things that are truly complex. Online order for one, is a facade for a huge logistical solution. All you do is use the interface to find items, add them to a cart, press checkout, fill in your information, then confirm.
+-> This is the 'facade' as your job stops there, and the responsbility shifts to the application(s) to then use encrypted billing, find the closest instance of the product(s) you ordered, figure out the most cost-efficient way to get it to the customer.
+
+## Flyweight
+An optimization strategy to seperate *constant* qualities of objects and *dynamic* qualities. Instead of wasting resources on instrinsic (constant) state of an object, 
+
+## Proxy
 
 # Refactoring & Quality of Code
 > [Techniques & Patterns](https://refactoring.guru/refactoring/techniques)

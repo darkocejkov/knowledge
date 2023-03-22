@@ -40,3 +40,7 @@ Allow us to access the "standard" in and outputs for the process. We can write t
 ### `process.?.on`
 NodeJS allows us to create *listeners* so that we can listen to, and respond to events. This is super important, because without them a NodeJS "program" that runs on the process has no simple way to wait for events, and thus follows the start - do - end cycle where we would start the program, it would do everything, then end and there's no opportunity for user input, etc.
 
+## Events
+Events are powerful ways to create listening apps, they are what the `.on` methods are built on, which allow us to go from a linear, procedural program to a *pub-sub* pattern.
+
+> Just like in `socketio`, we're able to hook into the logic of events by using the `.on(eventName, callback)` which *listens* for events and performs the callback, while we can trigger these events by "emitting" using the `emit(eventName, arguemnts?)` hook.

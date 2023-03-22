@@ -51,5 +51,34 @@ In typical OOP languages, we can usually differentiate *private* and *public* at
 This promotes the ability to really care about what the class itself should concern itself with, and what information it gives out to others, adding security.
 
 ## Abstraction
+Is a way of creating layers of complexity for classes. Classes themselves are meant to be abstractions of groups of related functions and members. Creating abstractions allows the creation of simpler, and usable interfaces for dealing with objects.
+Abstraction is meant to eliminate the complexity from low-level models, and add layers of "abstraction" to those models to provide a simpler way to interact with data, without worrying about the *overhead* that comes with lower level problems.
+
+Abstraction goes pretty hand-in-hand with encapsulation, because abstraction and encapsulation both benefit from selectively exposed features.
 
 ## Polymorphism
+Is the sharing of behaviours from parent to child classes. Children can re-implement (override) the inherited attributes and methods. This is accomplished in 2 different patterns:
+
+1. Run-time Method Overriding (polymorphism)
+	1. A subclass implements an inherited method differently from its parent.
+2. Compile-time Method Overloading (polymorphism)
+	1. A parent may implement the same function more than once, using the same name, but different *signatures*.
+
+# Basics of OOP
+	As based on Alexander Shvets "Dive into Design Patterns" 2019 book.
+
+## Pillars
+
+### Abstraction
+- Serves as a way to *model* real-world objects and relationships. Depending on the use case, we can abstract/model an object in many different ways, depth, and use.
+
+### Encapsulation
+- The way that individual components of a system are connected, but not in a single monolith. When you start a car - you only worry about turning the key, not the underlying physics of how your car actually starts.
+- Encapsulation is the *abstraction* of interfaces, but seperated by their concerns. 
+- Encapsulation hides parts of state and behaviours that are not necessary for the "client" to worry about.
+- To encapsulate, you provide definitions of the *visibility*
+	- `public`, available to *all*.
+	- `private`, available to *none* other than itself
+	- `protected`, available to *subclasses*
+- In strict theoretical terms, an **interface** is the public, exposed API that other classes can use.
+- 
