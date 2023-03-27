@@ -21,6 +21,40 @@ When your browser resolves the IP address, it is able to make a direct connectio
 Regardless of how IP's are resolved, whenever you communicate to a server, you do so through a specific way of communication called: `HTTP: Hyper Text Transfer Protocol`.
 > Protocols are just standards of how to pass data between communicating agents.
 
+HTTP as a standard of communication means that all agents wishing to communicate to other agents must conform to some version of HTTP to be understood by others. HTTP has 4 *methods* it uses to tell receiving agents what the sender would like to do.
+> GET, PUT, POST, DELETE
+> There are many more, but these are the 4 fundamentals. 
+
+Again, whenever you request a URL, like `google.com`, your browsers opens a pipeline of communication with the resolved server and does things like issues a `GET` request for the application associated with the URL.
+
+In order to dissect and view network requests, we can use the `Developer Tools: Network tab` to view the list of issued, pending, completed, and errored network requests sent from our browser to the server. 
+
+![[Pasted image 20230327154400.png]]
+> The `Headers` tab indicates all the "headers" of the RESPONSE and REQUEST, which are like meta-data about the request itself. There are common/standard headers that indicate basic information about the server, like the type of content an endpoint sends back, the life of the connection that's established, etc.
+
+When you request a web application, it will pass back documents and/or data, to which your browser then decides what it should do. In the case of an HTML document - it will *render* that document by creating a DOM (document-object model) tree from that HTML.
+
+HTML documents can also trigger other network requests through things like images. Instead of "bundling" an image into the HTML document, you *reference* that image from an endpoint/URL on the server. So, when the HTML is rendered, it then requests the image(s) on the server. 
+
+![[Pasted image 20230327155013.png]]
+
+> This is the crux of what web applications are built on. Servers that *serve* content such as HTML documents and static files, to which we can *compose* content within the HTML.
+
+# Rendering Applications
+Modern technology has enabled so much in terms of how we create and render HTML documents. Think about how server computers *serve* content to us when we request it.
+1. Browser sends HTTP request to server asking for content
+2. Server receives HTTP request
+3. ... ?
+4. Server sends HTTP response back to agent
+
+There is a space in between the steps the server can take. Servers are other computers essentially, and can do loads of different things. If the resource that we request is a static file, servers can *statically serve* those files to us without doing much "processing". We are also able to then serve *dynamic* content based on dynamic data through running the application logic on the server. This is how traditional web apps worked, we generate HTML and send it back from the server.
+
+This is as opposed to rendering the HTML document or its contents from within the document itself, which is possible through JavaScript. 
+JavaScript is a scripting language that allows the manipulation of the DOM tree, and it can also perform application logic relative to fetching data, and computing. 
+We can *enable* client-side (within-document) rendering by using `<script>` tags to link or define programmatic scripts to run within the document itself.
+
+As we go deeper into the idea of rendering, this starts to also build on what is fetched from the server on initial load - when we create the inital GET, the server sends back some HTML, which has links or *references* to other files, also on the server, which the browser starts creating additional network requests for those. Documents like *stylesheets* and *scripts* that are implicitly referenced need to also be fetched, because the *style* and *function* is affected by those things. 
+> We could forego code seperation and just define those things within the single HTML document, but obviously, as our application gets more and more complex, it becomes MUCH harder to organize code AND, makes the initial size of the HTML document larger than necessary - which means that on slow connections, users might see *nothing*.
 
 
 

@@ -6,3 +6,15 @@ Why this course? Teaches you from the ground-up on what "fullstack" is, through 
 
 > Of course, unless you want this course to count for a *credit* towards a degree offered by the Uni. of Helsinki - then you need to have an account. Otherwise, the projects and informations are entirely free.
 
+## React
+
+### Redux
+
+## NodeJS
+
+## MongoDB
+
+## GraphQL
+
+## TypeScript
+
