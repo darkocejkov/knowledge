@@ -40,6 +40,11 @@ HTML documents can also trigger other network requests through things like image
 
 > This is the crux of what web applications are built on. Servers that *serve* content such as HTML documents and static files, to which we can *compose* content within the HTML.
 
+# Events & Handling Them
+JavaScript is very different from other scripting languages is that its meant to be *asynchronous*. Dealing with events over the internet can be wildly difficult because there's no guarantee that requests or responses will actually come back, and especially the time it takes for them to. It could take milliseconds, or even 10 whole seconds - no one knows, and it will always vary.
+
+That's why JS is so powerful, because we harness the use of JS events and event listeners to create asynchronous functions. We listen (publisher-subscriber style) to specific events and define what happens when those events (and even more specifically, when specific things within *those* events happen).
+
 # Rendering Applications
 Modern technology has enabled so much in terms of how we create and render HTML documents. Think about how server computers *serve* content to us when we request it.
 1. Browser sends HTTP request to server asking for content
@@ -56,5 +61,40 @@ We can *enable* client-side (within-document) rendering by using `<script>` tags
 As we go deeper into the idea of rendering, this starts to also build on what is fetched from the server on initial load - when we create the inital GET, the server sends back some HTML, which has links or *references* to other files, also on the server, which the browser starts creating additional network requests for those. Documents like *stylesheets* and *scripts* that are implicitly referenced need to also be fetched, because the *style* and *function* is affected by those things. 
 > We could forego code seperation and just define those things within the single HTML document, but obviously, as our application gets more and more complex, it becomes MUCH harder to organize code AND, makes the initial size of the HTML document larger than necessary - which means that on slow connections, users might see *nothing*.
 
+# Manipulating the DOM
+Like previously mentioned, we use JavaScript to manipulate and read parts of the DOM, which we can use  to either render new content by creating new DOM elements, edit content of existing DOM elements, or read the values or content of the DOM.
+
+# Stylesheets
+Stylesheets are written in a language called "CSS", standing for "Cascading Style Sheets". They "cascade" because they create an implicit hierarchy based on the assignment of styles to elements.
+
+CSS uses *element selectors* like the **class**, **id**, or **type** of elements to "select" and style them.
+
+## Classes
+Are meant to be more "re-usable" forms of CSS selectors, in which we can create a "class" or "component-esque" definition to re-use.
+
+## IDs
+IDs are meant to be *unique* between all other elements, meaning that there should only be 1 ID per element which is NOT shared by any others.
+
+## Type/Tag
+We can also select elements by their generic DOM type, such as `img, p, h1` etc...
+
+# Forms & POSTing
+A `<form>` element is a wrapping element to denote the *function* of all the wrapped elements, or to differentiate two+ forms with different function.
+
+Forms are AJAX handlers, they are mean to initiate some sort of AJAX (*Asynchronous JavaScript and XML*) actions, typically an HTTP POST. Forms are implicitly meant to intake data, like a user form. You fill in the inputs of a `<form>` and submit it.
+
+If you give a form the `action` and `method` attributes, any actions that "submit" the form will cause an AJAX-based request to fire.
+- AJAX Forms will *refresh* the page.
+- The Content-Type is implicitly set as JSON.
+
+# Single Page Applications
+SPAs are more modern approaches to building websites and web apps. The traditional approach uses server-side based rendering to serve either static or dynamic HTML, with the key difference is that each of these places are placed at different endpoints and they create different "pages" so-to-speak.
+
+Instead of having pages being seperate entities, we can use modern JavaScript approaches to continuously construct our pages, almost like *virtual pages*.  
+
+Instead of requiring page refreshes to re-generate and re-fetch dynamic content, we can use JavaScript to do so. 
+
+# non-AJAX Forms
+Instead of using strict AJAX functionality on form elements through the action and method attributes, we can just create an *event handler* for form submission and deal with the server request ourself.
 
 
