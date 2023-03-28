@@ -97,4 +97,29 @@ Instead of requiring page refreshes to re-generate and re-fetch dynamic content,
 # non-AJAX Forms
 Instead of using strict AJAX functionality on form elements through the action and method attributes, we can just create an *event handler* for form submission and deal with the server request ourself.
 
+# JavaScript Libraries
+There are plenty of libraries and packages for JS that extend its base functionality. `jQuery` is an example which was super popular.
+
+# Fullstack?
+What exactly *is* a fullstack developer? It's really just a shorthand for saying "frontend AND backend developer". 
+Web applications can typically be abstracted into 2 main layers:
+1. Frontend
+	1. Visual HTML Interface rendering
+	2. JavaScript-driven interactivity
+2. Backend
+	1. API to handle requests
+	2. Read and Manipulate data from non-volatile stores (database)
+
+In-fact, there's a lot in-between and a lot of complexity in each side. It becomes a lot more confusing when server-side rendering exists, or serverless APIs, different tools to query APIs, different kinds of databases (relational vs. object-relational), etc.
+
+There are so many things to consider, and sometimes it's better to *specialize* in one or the other. However, they tend to go hand-in-hand.
+
+# Exercises
+
+## 1, 2, 3
+Read Mozilla's tutorials on HTML, CSS, and Form elements
+
+## 4
+### Note Diagram (Mermaid)
+
 
