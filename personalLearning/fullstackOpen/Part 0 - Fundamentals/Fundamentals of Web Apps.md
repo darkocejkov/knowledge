@@ -113,13 +113,3 @@ Web applications can typically be abstracted into 2 main layers:
 In-fact, there's a lot in-between and a lot of complexity in each side. It becomes a lot more confusing when server-side rendering exists, or serverless APIs, different tools to query APIs, different kinds of databases (relational vs. object-relational), etc.
 
 There are so many things to consider, and sometimes it's better to *specialize* in one or the other. However, they tend to go hand-in-hand.
-
-# Exercises
-
-## 1, 2, 3
-Read Mozilla's tutorials on HTML, CSS, and Form elements
-
-## 4
-### Note Diagram (Mermaid)
-
-
