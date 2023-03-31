@@ -66,6 +66,8 @@ The problem is that SQL requires a lot of design in terms of the data model, bec
 In a very simple system, it's typically not worth creating such a rigid structure or data model, because there's no benefit to *normalizing* relational data. 
 Sometimes, you just need a solution to store data in a non-volatile way.
 
+SQL provides the rigid structure out-of-the-box, it's *necessary* to create tables and fields to relate data entries. For NoSQL, it's much harder to achieve a good data model, because you can structure documents however you want, and it can easily change. It's both a blessing and a curse for NoSQL, since our databases can have really fluid models, but a *good* model is different - it takes a lot of planning and understanding what models your application needs.
+
 # MongoDB
 [Overview](https://www.mongodb.com/docs/manual/core/databases-and-collections/)
 
