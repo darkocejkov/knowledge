@@ -1,31 +1,32 @@
 # Data
 
-| Name               | Tags                      | URL |
-| ------------------ | ------------------------- | --- |
-| [Frontbook]()          | #compilation  #javascript |     |
-| ZDog               | #3D #javascript           |     |
-| Poimandres         | #3D #converter            |     |
-| CSS Warp           | #css #generator           |     |
-| CSSMatic           | #css #generator           |     |
-| Tailwind Toolbox   | #css #generator           |     |
-| Fontface Generator | #css #generator           |     |
-| SVG Warp           | #css #generator #svg      |     |
-| Tachyons           | #css #components          |     |
-| CSS Gradient       | #css #generator           |     |
-| SVG URL            | #css #svg                 |     |
-| Splitting          | #css #javascript #strings |     |
-| MESH Y             | #design #svg              |     |
-| fuel               | #generator #svg           |     |
-| BuiltIn            | #careers #reviews         |     |
-| TweakPane          | #gui #javascript          |     |
-| control-panel      | #gui #javascript          |     |
-| controlkit         | #gui #javascript          |     |
-| guify              | #gui #javascript          |     |
-| three.js           | #3D                       |     |
-| Spline             | #3D #tool                 |     |
-| React Spring       | #react #animation         |     |
-| Framer Motion      | #react #animation         |     |
-
+| Name               | Tags                      | URL                       |
+| ------------------ | ------------------------- | ------------------------- |
+| [Frontbook]()      | #compilation  #javascript |                           |
+| ZDog               | #3D #javascript           |                           |
+| Poimandres         | #3D #converter            |                           |
+| CSS Warp           | #css #generator           |                           |
+| CSSMatic           | #css #generator           |                           |
+| Tailwind Toolbox   | #css #generator           |                           |
+| Fontface Generator | #css #generator           |                           |
+| SVG Warp           | #css #generator #svg      |                           |
+| Tachyons           | #css #components          |                           |
+| CSS Gradient       | #css #generator           |                           |
+| SVG URL            | #css #svg                 |                           |
+| Splitting          | #css #javascript #strings |                           |
+| MESH Y             | #design #svg              |                           |
+| fuel               | #generator #svg           |                           |
+| BuiltIn            | #careers #reviews         |                           |
+| TweakPane          | #gui #javascript          |                           |
+| control-panel      | #gui #javascript          |                           |
+| controlkit         | #gui #javascript          |                           |
+| guify              | #gui #javascript          |                           |
+| three.js           | #3D                       |                           |
+| Spline             | #3D #tool                 |                           |
+| React Spring       | #react #animation         |                           |
+| Framer Motion      | #react #animation         |                           |
+| React Patterns     | #react #design            | https://reactpatterns.com |
+|                    |                           |                           |
 # Views
 
 
