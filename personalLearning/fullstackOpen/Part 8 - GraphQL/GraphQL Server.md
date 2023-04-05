@@ -127,4 +127,43 @@ type Query {
 > - the `allPersons` query must return a 0+ array of Persons
 > - the `findPerson` query has an argument, a string called `name`, and this query will return a Person object, but it's not required that it have a value (in the case of there being no existing person)
 
+So, fields of the query object describe the available queries the client can send to the server, and what kind of data we must, or can provide, and what to expect in return.
 
+Also, despite the fact that it's a "query language", it's not actually tied to databases at all. It doesn't matter how the data is actually stored or what we use to query and mutate the data in the store. GraphQL actually describes the language of the client and server API requests.
+> Under the hood, a GraphQL request can basically be a RESTful request with a singular method allowed: POST. The payload is the query.
+
+# Apollo Server
+
+```js
+const server = new ApolloServer({
+	typeDefs,
+	resolvers
+})
+```
+
+- `typeDefs` corresponds to a string literal that contains all the type definitions for our GraphQL schema, including Query and Mutation types.
+- `resolvers` is a JS object that contains a Query property, which itself defines the *actual behaviour* of the defined type Query in the `typeDefs`.  These behaviours are defined as *functions*, that run when a GraphQL request queries them
+
+## Resolvers and Parameters
+When defining resolves, it's common to see at least TWO parameters:
+- `(root, args) => ...`
+
+Technically, resolves can receive 4 parameters, but it's most common to see the `root` and `args`. This is because the *root* parameter describes the root object, and the *args* parameter describes any incoming arguments to the query.
+
+Resolvers can be defined for *each* field of ALL types - but if none is defined, then Apollo creates default resolvers for them. This indicates to us that all resolvers do is define how to access a specific field on an object.
+
+## Nested Objects
+Given a GraphQL schema that contains objects as types within other objects, the way we query and mutate these objects must follow the direction of the schema - meaning that if an object is nested within another (take for example the `address` object within `person` object).
+
+However, this doesn't mean that the data itself must be stored in the same way - that's what resolvers are for. Resolvers define how we can structure the stored object in the way of the schema.
+
+## Mutations
+Similar to how the `Query` type describes the "GET" queries of our schema, the `Mutation` type describes the schema of any mutation-bound queries.
+Continuing with this resolver pattern, we define the behaviour of mutations through resolvers.
+
+## Error Handling
+GraphQL can handle runtime errors through its *validation* and pass back appropriate error messages. The beauty of GraphQL lies partially in how detailed the error messages can be. 
+We can create "custom" errors through the `GraphQLError` object.
+
+## Multiple (Combined) Queries
+GraphQL provides ease-of-use by automatically parsing multiple queries. We can even invoke the same query more than once in the same query request, with different parameters. In that case, we must assign a unique name to those queries.
