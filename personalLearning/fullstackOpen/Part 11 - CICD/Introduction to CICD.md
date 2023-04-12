@@ -64,10 +64,64 @@ ___
 - Keep track of what version of code *is* deployed, through some unique ID; even better if we have a mapping of versions to history of releases
 
 # Types of CI Setups
-CI/CD processes or tools should have their own server setup independent of all other processes to minimize conflict
+CI/CD processes or tools should have their own server setup inde\pendent of all other processes to minimize conflict
 
 - Self-hosted
 	- Jenkins
 - Cloud-based
 	- Github Actions
+
+# GitHub Actions
+- This solution is a great one if you use GitHub, as it's a cloud-based CI/CD tool, and it comes directly from the same source as your repository
+	- Although it's a different tool from GitHub repos, since it integrates super easily and well, it enables this CI/CD solution to skip various configuration steps of authentication, pub-sub events, etc...
+
+## Workflows
+- process flows that run automated steps
+- it's a collection of *at least* one or more Jobs, which each have 1+ steps
+	- Jobs are executed in parallel, while each step within a single job is sequential
+
+- Workflows execute on the action of of a *trigger*:
+	- GitHub event (pushes commit to repo, issue or PR created)
+	- time scheduled event (cron-syntax)
+	- external event such as a Slack/Discord message/command
+
+# Deployment
+- This is one of the most intense and complex areas to configure
+- Having a bad deployment process can lead to very bad things for the users of the app, and perhaps even for developers!
+
+## The Point
+- The entire point of having some CI/CD process is that we are able to automate the various cross-platform, sequential steps 
+- If at any point in the CI/CD process something fails, we shouldn't continue the process, and we especially shouldn't deploy any code that is not processed, tested, etc ...
+- A good deployment system will:
+	- fail gracefully *anywhere*, 
+	- should never leave production/releases broken, 
+	- be verbose about errors and when/what/why
+	- should allow *rollbacks* in the case of broken software
+	- should only deploy when the requirements are met
+		- all tests pass, there's a certain level of total code coverage with tests, etc...
+
+# Versioning
+- Important to understand which versions of code are released, a "snapshot" can be identified by the version that is assigned to it.
+- If versioning is in place, we can identify the history, either relative to timestamps, or to the versions themselves. If a specific version has some critical bug, we can "rollback" to the previous, given that we have version
+
+## Semantic
+- AKA *semver*, is a versioning strategy
+	- `{major}.{minor}.{patch}`
+		- patches are about *fixing* existing functionality
+		- small changing to functionality are *minor*
+		- complete changes of application/functionality are *major*
+	- npm packages use semver
+
+## Hash
+- Hash versioning, AKA SHA versioning
+- the version "number" is a *hash* based on the contents of the version itself
+- all git commits are SHA versioned
+
+## `semver` vs. `sha`
+- The semver approach is very useful for any releases that are meant to be human readable, that you are able to parse information about history, chronology, and general information about a release through its semantic version
+	- for example, if you're upgrading an *npm* package, you might want to upgrade to a version that is the *next* highest minor update, because changing major versions much introduce too many breaking changes
+		- even though knowing this depends on knowing changes of the package itself, and whether or not your specific use would introduce breaking changes - it's still really easy to find out
 	- 
+- the SHA approach is much more suited to an *artifact* version, say the artifact of a build phase. 
+	- because it's a hash, it's inherentely unique based on the contents
+	- since it's unique, and quite difficult for human comparison, it's really great for automated comparison between hashes, 
