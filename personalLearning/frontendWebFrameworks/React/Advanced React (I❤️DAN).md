@@ -510,26 +510,60 @@ function Search(){
 - Persistent state between pages, transitions
 - Consistency between the client and the server for events
 - When do we opt in to checking the server to synchronize the client?
+
 ## Reponsiveness
 - Continous actions (gestures/scroll), low limit on lack of visual feedback
 - Discrete actions (click), higher limit, < 100ms delays are equally fast, any longer and there needs to be some visual indicator
 	- layout jumps, several loading stages can make it feel longer
+
 ## Latency
+- Time as a cost
+- A tradeoff between computational and network costs
+- Applications that are *waiting* for data - or even computing things, must be responsive and visually indicative of the state of data 
+- How do we deliver an application that depends on asynchronous data without creating empty holes, cascading spinners?
+
 ## Navigation
+- A necessity for web applications - especially sites that depend on various "pages" or "views" is that the UI is stable with respect to changes during navigation, both when the origin is internal like a navbar, or external, like browser history API (URL address)
+- navigation shouldn't destroy the expectations of persistency
+	- when you are looking at a long list of items and navigate away, then come back, it's quite annoying to not be in the same place as you were before
+
 ## Staleness
+- Caching data is simple, but knowing when to invalidate it is it's own million dollar problem
+- When we involve caching data - any changes in the local state have to then start caring about how the cache matches up. 
+- Finally, how do we "amend" or reconcile the cache? Do we re-instantiate the cache, or use it to construct the full data set?
+
 ## Entropy
+- As time goes on, it becomes infinitely more difficult to predict the interactions that took place to reach the current UI from the previous one
+- If there exists $N$ total states, then there are $N \times (N - 1)$ possible transitions between them
+
 ## Priority
+- How do we create an environment of independent components to respect priority?
+	- Selfishly, every contribution in terms of a component would like to be *the most* important. In this case, then all components compete to be the most important - which results in none being important.
 
 ## Accessibility
+- How do we make accessibility the *default*, rather than an *afterthought*?
 
 ## Internationalization (i18n)
+- There is a constant need for web applications - which are globally accessed - to be in multiple different languages.
+- This need should be easily satisfied, but also should support various shifts like right-to-left layouts.
+- Abiding by these should not sacrifice the other principles
 
 ## Delivery
+- Tradeoffs occur between how large the initial load is, versus the amount of data we fetch
+	- we *could* fetch all the data at the start - but would result in a heavy, long load at the start, but much smaller and minimal loads while it's being used
+	- or, we could fetch a small amount at a time, at the cost of increasing interaction-based load times.
 
 ## Resilience
+- No code is ever free of bugs, ever, period, ever.
+- The goal is to *minimize* the number of bugs - but even more importantly, to create *fault-tolerant* interfaces in this case.
+	- What if our data fetch fails, what if the user attempts to divide by zero, what if a freak solar ray flips a bit in the computer's memory and makes them an admin?
+- Ideally, when errors happen we should not crash their page to a blank, dreary screen or cause panic in the user.
 
 ## Abstraction
-
+- We build apps with the intention of making it easy to build on top of existing code, or the ability to integrate existing code (like packages, or custom written code) without introducing much issue.
+- Abstracting makes code bases more *logical* because we seperate functions that relate, we can reuse functions by an elegant interface rather than copy-and-pasting them, it allows us to centralize important logic.
+	- However, abstracting *too much* can lead to the opposite effect, where it becomes way more unclear to work on, and it resists change.
+	- Very importantly, how do we avoid catching along the *same* problem multiple times?
 
 ## [Data Fetching with Effects](https://www.robinwieruch.de/react-hooks-fetch-data/)
 
