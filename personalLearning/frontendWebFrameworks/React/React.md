@@ -765,8 +765,6 @@ useEffect(() => {
 -> Effects are tested on *every* render to see if they *should* run. Effects with **dependencies** only run after renders in which their any one of their dependencies have changed
 > Effects with multiple effects do not run if NONE of their dependencies have updated
 
-
-
 ### When TO USE effects:
 1. Attempting to synchronize with non-React systems
 2. When fetching data* [[#Data Fetching]]
@@ -774,7 +772,14 @@ useEffect(() => {
 ### [When to not use effects](https://react.dev/learn/you-might-not-need-an-effect):
 1. Updating state within effects, transforming data for rendering/display
 
-Since effects run AFTER the commit, running an effect to set another state causes a new re-render, which causes a *chaining* of re-renders, because setting state automatically triggers re-renders, which then trigger effects, etc.
+#### Poor use of effects exemplified: 
+- Something I have been very guilty for in the past, while using effects, is that I would "piggyback" off state changes to enforce rules, or other state changes
+![[Pasted image 20230413111655.png]]
+- The context here is that `equal`, `height`, and `width` are all stateful variables. `equal` is a boolean, and i would use effects to try to synchronize React components - this is WRONG WRONG WRONG. 
+- Effects are not for synchronizing React state and logic - you do this in the event handlers. Instead of creating a side effect to listen on changes to `equal`, you handle this in the event handler directly.
+	- Why? It's unneccessary to do so, because you can just shift this to the event handler, and the logic is centralized and not spread in various side effects. If it's too much to organize this logic in the event handler, then you can move this into a reducer.
+		- Since effects run AFTER the commit, running an effect to set another state causes a new re-render, which causes a *chaining* of re-renders, because setting state automatically triggers re-renders, which then trigger effects, etc.
+
 ```jsx
 
 const [data, setData] = useState()
@@ -794,7 +799,7 @@ const filtered = useMemo(() => {
 }, [data])
 
 ```
--> useMemo allows you to skip unnecessary calculations, so you tell React only to re-calculate when a dependency has changes
+-> useMemo allows you to skip unnecessary calculations, so you tell React only to re-calculate when at least 1 dependency has changes
 
 
 2. In response to changes of other events to "reset" or change states
