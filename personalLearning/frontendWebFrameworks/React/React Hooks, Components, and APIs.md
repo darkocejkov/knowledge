@@ -438,6 +438,40 @@ function ScrollYFloored() {
 
 # APIs
 ## `createContext`
+[Reference](https://react.dev/reference/react/createContext)
+```jsx
+import { createContext, useContext } from 'react';  
+const ThemeContext = createContext('light');
+const AuthContext = createContext(null);
+
+function App() {  
+	const [theme, setTheme] = useState('light');  
+	const [user, setUser] = useState({username: 'Joe'})
+	// ...  
+	return (  
+		<ThemeContext.Provider value={theme}>  
+			<AuthContext.Provider value={user}>  
+				<Page />  
+			</AuthContext.Provider>  
+		</ThemeContext.Provider>  
+	);  
+}
+
+function Page(){
+	const theme = useContext(ThemeContext)
+	const user = useContext(AuthContext)
+}
+
+```
+- creates a Context "store", that has a `.Provider` component wrapper
+	- the Provider wrapper passes the context down to *all* of its children, and their children
+- only components that *subscribe* to the context with `useContext` are considered in reconcilliation to changes in contextual state
+- the value passed to `createContext` is the *default* value
+	- when a compent wants to read the context, through `useContext`, it looks for the **nearest** parent provider. If there is none, it uses the default value.
+		- if there are *multiple* parent wrappers for the *same* context, it uses the *first* one.
+- the value of a context can be *anything*, number, string, object, function.
+- the purpose of having more than one context, is that we can seperate them from objects that don't need them
+	- perhaps all buttons, tooltips, and text components need the *theme* context, but don't need the *authentication* context
 
 ## `forwardRef`
 [Reference](https://react.dev/reference/react/forwardRef#render-function)
@@ -471,9 +505,13 @@ const MyInput = forwardRef(function MyInput(props, ref) {
 	- the parent controls the *ref*, passes the ref down to the child, and the child can attach the ref to a DOM node that it renders, while the parent can reference the *same* node.
 - it takes a *rendering* function as the first argument, and passes that renderer the *props* and the *ref*
 
-## `memo`
+
 
 ## `lazy`
+[Reference]()
+
+## `memo`
+[Reference]()
 
 ## `startTransition`
 
