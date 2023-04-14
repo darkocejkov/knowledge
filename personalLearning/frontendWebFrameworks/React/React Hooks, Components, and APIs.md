@@ -505,15 +505,40 @@ const MyInput = forwardRef(function MyInput(props, ref) {
 	- the parent controls the *ref*, passes the ref down to the child, and the child can attach the ref to a DOM node that it renders, while the parent can reference the *same* node.
 - it takes a *rendering* function as the first argument, and passes that renderer the *props* and the *ref*
 
-
-
 ## `lazy`
-[Reference]()
+[Reference](https://react.dev/reference/react/lazy)
+- defer loading component's code until it's rendered for the *first* time
+```jsx
+//const <component> = lazy(load)
+const MarkdownPreview = lazy(() => import('./MarkdownPreview.js'));
+
+<Suspense fallback={<Loading />}>  
+	<h2>Preview</h2>  
+	<MarkdownPreview />  
+</Suspense>
+```
+- the *load* function receives no parameters
+- however, the function must return a **Promise**, or a "thenable" object
+	- "thenable" means it has a `.then` method
+- the Suspense works with lazy loaded components
 
 ## `memo`
-[Reference]()
+[Reference](https://react.dev/reference/react/memo)
+- "memoize" components, skipping re-renders when its props are *unchanged*
+```jsx
+const MemoizedComponent = memo(SomeComponent, arePropsEqual?)
+```
+- this comparison between props is a *shallow* comparison
+- it's not a *guarantee* that it skips, but memoization is definitely an optimization
+- the `arePropsEqual` is a function that takes TWO arguments
+	- previous props & new props
+	- it should return `true` if the props are equal, *or*, if the outcome would be the same
+- memoization relies on *props*, and not context or internal state
+- 
 
 ## `startTransition`
+- the top-level API that comes with [[#`useTransition`]]
+- it's basically a way to create transition *scopes* without the need to use the hook, if you don't need the `isPending` flag.
 
 # Components
 
@@ -586,3 +611,29 @@ root.render(
 	- we can *nest* boundaries to create "waterfalls" of UI updates
 		- rather than waiting for all A, B, and C to finish loading for the whole UI, we can create nested boundaries, so that once A finishes loading, it triggers the suspense boundary for B and its fallback, and so on
 # React DOM 
+
+## `createPortal`
+[Reference](https://react.dev/reference/react-dom/createPortal#createportal)
+```jsx
+<div>  
+	<SomeComponent />
+	{createPortal(children, domNode)}  
+</div>
+```
+- render children into different parts of the DOM
+	- the children that are part of the portal are only *rendered* as children of the `domNode`, but are effectively still children of the original component
+	- the `domNode` must be a DOM node
+- events from the portals *propagate according to the React tree*, not the DOM tree
+
+## `flushSync`
+[Reference](https://react.dev/reference/react-dom/flushSync)
+- force React to flush updates in the callback *immediately*
+
+```jsx
+import { flushSync } from 'react-dom';  
+
+flushSync(() => {  
+	setSomething(123);  
+});
+```
+- it can also flush pending updates, effects, or updates inside effects
