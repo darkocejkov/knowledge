@@ -1,7 +1,7 @@
 ___
  
 # ? ? ?
-React is a [[Frameworks]] built on [[JavaScript + TypeScript]]. React has very interesting principles that it uses
+React is a [[Frameworks]] built on [[repo/personalLearning/languages/JavaScript/JavaScript]]. React has very interesting principles that it uses
 to accomplish it's goals, because it is essential a scheduler that holds information about the DOM that it constructs, and schedules direct changing to those DOM elements. 
 
 # Why use React?

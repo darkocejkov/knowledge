@@ -1,7 +1,7 @@
 # Three JS
 
 ---
-ThreeJS is a [[JavaScript + TypeScript]] package that allows for *abstracting* WebGL
+ThreeJS is a [[repo/personalLearning/languages/JavaScript/JavaScript]] package that allows for *abstracting* WebGL
     - this means that using threejs manipulates WebGL under the hood, and makes it easier to create easy object-space models.
 
 ---

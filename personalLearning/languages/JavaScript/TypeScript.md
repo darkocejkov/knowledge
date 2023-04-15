@@ -1,26 +1,7 @@
-# JavaScript, TypeScript, jQuery
-
-# Interesting Libraries, Packages, and Tools
-
-<aside>
-💡 [D3 Charting library with native Crossfilter](https://dc-js.github.io/dc.js/) (DC.js)
-
-</aside>
-
-<aside>
-💡 [Data filtering and optimization library](http://square.github.io/crossfilter/) (Crossfilter)
-
-[World Bank example](https://drarmstr.github.io/chartcollection/examples/#worldbank/)
-
-</aside>
-
-# TypeScript ([https://www.typescriptlang.org/docs/handbook/intro.html](https://www.typescriptlang.org/docs/handbook/intro.html))
-
-## Basics
+[Docs](https://www.typescriptlang.org/docs/handbook/intro.html)
 
 ## What?
-
-TypeScript is a language ****very**** closely related to JavaScript. It is JavaScript at it’s core, except it is a ****************************strongly typed**************************** language.
+TypeScript is a language *very* closely related to JavaScript. It is JavaScript at it’s core, except it is a **strongly typed** "superset" of JS -- it has all the functionality and more.
 
 <aside>
 🔣 **Typed Languages?** 
