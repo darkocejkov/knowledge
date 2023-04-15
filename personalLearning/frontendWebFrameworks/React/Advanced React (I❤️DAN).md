@@ -134,7 +134,7 @@ ReactDOM.render(<App />, domContainer)
 ## Inversion of Control
 - The inversion of control is a general design pattern that passes the *control* from the invoker to the definition. Instead of embedding some resulting function - we pass the function like a callback.
 - React displays the inversion of control pattern because we define components as functions - which are known by React - and React invokes them.
-- Here are some prop
+- Here are some properaties:
 	- Components are more than functions, as they can have features like a *local state*, oriented around the position within the tree
 	- It's easier to reconcile, as we can use the types - instead of strictly the returns - to determine what has changed and makes React's job easier
 	- React can delay reconcillation, because it handles the invocation, and can let the browser work before re-rendering
