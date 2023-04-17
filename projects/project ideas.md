@@ -10,7 +10,7 @@ steam API querying to display statistics of all the games you own
 - account worth
 	- taking into account market inventory prices
 - GPT integration to be passed a sets of games from library to *recommend* a set of them, and perhaps a set that is not owned
-
+- :)
 # Job Hunt Application Organizer
 
 # Media Server File Browser & Player
