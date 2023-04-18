@@ -536,5 +536,453 @@ export class MediaItemFormComponent implements OnInit {
 # Form Validation
 
 ## Built-In
+- using the `Validators` built-in form validator
+```tsx
+import {FormGroup, FormControl, Validators} from '@angular/forms' 
+
+ngOnInit(){
+	this.form = new FormGroup({
+		medium: new FormControl('movies'),
+		name: new FormControl('', Validators.compose([
+			Validators.required,
+			Validators.pattern('[\\w\\-\\s\\/]+')
+		])),
+		year: new FormControl(''),
+	});
+}
+
+//form.html
+<form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+	<select name="medium" id="medium" formControlName="medium">
+        <option value="Movies">Movies</option>
+        <option value="Series">Series</option>
+	</select>
+	<button type="submit" [disabled]="!form.valid">Submit</button>
+</form>
+```
+- the `Validators` class has methods to describe validation *rules*, like if a field is *required*, or it must pass a *regex pattern*. 
+- Within the *html* of the form, we can *bind* the disabled attribute to the validity of the form, using the `FormGroup`'s handle of `form`, and access whether or not the form is in a valid state using `.valid`
+- In the `FormControl` constructor, we can pass a validator function. The `Validators` class comes with a handy `.compose` function that takes an array of validator functions, to compose multiple rules into a single function.
 
 ## Custom Validation
+- To create a custom validation rule, we need to create a function take takes an object - which is either a FormControl, FormGroup, or FormArray.
+	- returns `null` when *valid*, and an object when *invalid*
+- This function can be any function, but it makes sense to create that custom validation as a method to the form component's class
+
+```tsx
+ngOnInit(){
+	this.form = new FormGroup({
+		medium: new FormControl('movies'),
+		name: new FormControl('', Validators.compose([
+			Validators.required,
+			Validators.pattern('[\\w\\-\\s\\/]+')
+		])),
+		year: new FormControl('', this.yearValidator),
+	});
+}
+
+yearValidator(control: FormControl){
+	if(control.value.length === 0) return null
+	const year = parseInt(control.value, 10)
+	const minYear = 1900
+	const maxYear = 2100
+	if (year >= minYear && year <= maxYear) return null
+	else{
+		return{
+			year: {
+				minYear,
+				maxYear,
+			}
+		}
+	}
+}
+```
+- The object we return can contain any values, but it's really useful to return objects with validation information to help the user decipher the problem
+- the object should contain a property that matches the *name* of the `FormControl`.
+
+## Error Handling & Display
+```tsx
+//form.html
+<form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+	<select name="medium" id="medium" formControlName="medium">
+        <option value="Movies">Movies</option>
+        <option value="Series">Series</option>
+	</select>
+	
+	<li>
+      <label for="name">Name</label>
+      <input type="text" name="name" id="name" formControlName="name">
+      <div *ngIf="form.get('name').hasError('pattern')" class='error'>
+	      Name has invalid character
+      </div>
+    </li>
+
+	<li>
+      <label for="year">Year</label>
+      <input type="text" name="year" id="year" maxlength="4">
+      <div *ngIf="form.get('year').errors as yearErrors" class='error'>
+	      Year must be between {{ yearErrors.minYear }} and {{ yearErrors.maxYear }}
+      </div>
+    </li>
+
+	<button type="submit" [disabled]="!form.valid">Submit</button>
+</form>
+```
+- For the *name* error, we are conditionally displaying the error by binding the structural directive `ngIf` to the expression of checking whether our form's control called `name` has an error of the type "pattern" - we could also similarly check for the "required" error
+- For the *year* error, we are doing something similar as for the name error, but instead of invoking the `hasError(type)` (which we can still do), we create a *handle* for the `.errors` property as `yearErrors`. If the form control of name `"year"` has errors, then it displays this element.
+	- We can then also use the *handle* of `yearErrors` to access the values of the object in element templates
+
+# Depedency Injection & Services
+- Dependency Injection is something that is innate in Angular
+- It is a way to implement the *inversion of control* design pattern, where we shift the control of functions to be in seperate areas. Dependency injection does this by seperating how services, directives, and components are implemented - they don't need to know *how* they are implemented.
+	- We pass these things to each other to create "blackbox" environments. Components receive services, and we know how to invoke them - what to input, and and where to store the output. 
+	- The implementation of these functions are then seperate, so they no longer "depend" on one-another, so if our API logic changes - we don't have to then change all components.
+
+- Angular implements dependency injection through TWO steps:
+	1. Service Registration, telling Angular about all the *injectable* services
+	2. Service retreival, by *injecting* these *injectable* services into components
+		1. `@Inject` decorator
+		2. constructor injection `constructor() { }`
+
+- When we inject services into classes by either the decorator, or by enforcing a service *type* (via typescript) in the constructor, Angular will used *cached services* to accomplish using this injectable service.
+	- This means that Angular will check if a service *instance* exists - if it does, it uses that existing instance, otherwise, it creates a *new* service instance, and caches it
+- Something really important about services and injectables is that it matters at which point in the element tree they are injected - because injected services are available only to the direct injected interface *component*, and all its *children*
+	- this means that *bootstrapped* services, are available from the root component, and all children of the root.
+- If we want to create *custom* services - we can declare classes with re-usable logic as injectables through the `@Injectable` decorator
+
+## Services
+- not an Angular construct, but rather a "pattern"
+	- they are regular classes that encapsulate *logic* that may/not be used in various components
+	- they don't need some specific naming or logic to be considered as services
+- a "service" is very much like a middle-man, a very common "service" is a data service, that deals with getting and setting data.
+	- The "dependency injection" part becomes obvious in this pseudo-code:
+```tsx
+export class DataService {
+	get(id?) {}
+	set() {}
+}
+
+export class Component {
+	DataService.get()
+	DataService.set()
+}
+```
+- If we create some "blackbox" DataService class that handles getting and setting data, the components that use it only use the *exposed API* that it provides (`get()` and `set()`) - meaning that components are not dependent on the implementation of these functions - but rather the *usage* of the API itself - what you input and what is output.
+	- For a more concrete example, our DataService class can either implement a *real* connection to a database, and issue *real* commands to get and set records - or it can just use a simple, volatile memory list of items. As long as both implementations create the *same* API interfaces for components to use, then it does not matter.
+- Furthermore, if we create a service that can be used in >= 1 component, then it properly encapsulates the logic that would be used in multiple places
+- Angular has built-in "services" that help you accomplish specific things:
+	- Http
+	- FormBuilder
+	- Router
+
+## Constructor Injection (`FormBuilder`)
+```tsx
+import {FormGroup, FormControl, Validators, FormBuilder} from '@angular/forms'
+
+export class MediaItemForm implements OnInit {
+	constructor(private formBuilder: FormBuilder)
+
+	ngOnInit(){
+		this.form = new this.formBuilder.group({
+			medium: new this.formBuilder.control('movies'),
+			name: new this.formBuilder.control('', Validators.compose([
+				Validators.required,
+				Validators.pattern('[\\w\\-\\s\\/]+')
+			])),
+			year: new this.formBuilder.control('', this.yearValidator),
+		});
+	}
+}
+```
+- constructor injection relies on using TypeScript to "inject" a service as a *type*. `FormBuilder` is a service, and we create a `formBuilder` parameter to the constructor as the type of the service - which tells Angular to inject the `FormBuilder` into this component
+- something else that's kind of weird, is the use of the `private` modifier on the `formBuilder` property. `private` is another use of TypeScript, and allows us to create a *property* called `formBuilder` that lives on the class, and not just in the constructor.
+	- now, since the constructor will inject the `FormBuilder` service into the `formBuilder` property, we can use this property within the `ngOnInit` lifecycle hook to de-couple the FormGroup and FormControl code from our component
+		- if we then wanted to modify the underlying form paradigm - we can do so globally by changing how the `FormBuilder` is implemented
+
+## Custom Service
+```tsx
+//media-item.service.ts
+export class MediaItemService{
+
+	mediaItems = [
+		{},
+		{},
+		{},
+		{},
+	]
+
+	get(){
+		return this.mediaItems
+	}
+
+	add(mediaItem){
+		this.mediaItems.push(mediaItem)
+	}
+
+	delete(mediaItem){
+		this.mediaItems = this.mediaItems.filter(i => i.id !== mediaItem.id)
+	}
+
+	/* This is why dependency injection is so useful, we can implement these 
+		however we like, we can use different methods.
+	delete(mediaItem){
+		const index = this.mediaItems.indexOf(mediaItem)
+		if(index >= 0) this.mediaItems.splice(index, 1)
+	}
+	*/
+}
+```
+- Here we can easily see that a "media service" is just a class that controls logic. In this case, we hold the value of a list of items, can get, add, and delete items from this list. Dependency injection allows us to hold this implementation seperate from the components that use it.
+	- This bonus makes it easier to logically organize things based on their function, but also provides a really incredible benefit to unit testing. 
+	- Instead of having components depend on this logic directly in their implementation, we can *unit test* our components using "Mock" services made for testing - instead of using a real implementation of a database for example.
+
+### Providing a Service
+
+#### Directly in the root module
+```tsx
+//app.module.ts
+import {MediaItemService} from './media-item.service'
+
+@NgModule({
+	imports: [...],
+	declarations: [...],
+	bootstrap: [AppComponent],
+	providers: [
+		MediaItemService
+	]
+})
+```
+- We can declare our service within the `providers` property of a module
+	- when we do this, we tell Angular to *instantiate* this service for *this* module, and *all* other modules down the tree.
+
+#### By using the `Injectable` decorator
+```tsx
+//media-item.service.ts
+import {Injectable} from '@angular/core'
+
+@Injectable({
+	providedIn: 'root'
+})
+export class MediaItemService { }
+```
+- Instead of needing to import and declare this service as a `provider` within the root module, we can use  `Injectable` to decorate this class to be 'provided in' the root module.
+	- This keeps the provider logic next to the service, and also helps Angular optimize
+		- adds support to lazy load this module
+- If we use this `Injectable` decorator, we don't need to import nor declare it as a provider in the root module file.
+
+### Using the service in a component
+
+#### By using constructor injection
+```tsx
+import {MediaItemService} ...
+
+@Component()
+export class MediaItemList implements OnInit {
+
+	mediaItems;
+
+	constructor(private mediaService: MediaItemService)
+
+	ngOnInit(){
+		this.mediaItems = this.mediaService.get()
+	}
+
+	onMediaItemDelete(mediaItem){
+		this.mediaService.delete(mediaItem)
+	}
+}
+
+//media-form.component.ts
+export class MediaItemForm implements OnInit {
+	constructor(private formBuilder: FormBuilder, private mediaService: MediaItemService)
+
+	onSubmit(mediaItem){
+		this.mediaService.add(mediaItem)
+	}
+}
+```
+
+### Providing *value* types
+- If we wanted to provide the types/constraints of *values* for fields, we need to use a different syntax:
+```tsx
+const lookupLists = {
+	mediums: ['Movies', 'Series']
+}
+
+@NgModule({
+	imports: [],
+	declarations: [],
+	providers: [
+		{ provide: 'lookupListToken', useValue: lookupLists }
+	]
+})
+```
+- This is a little bit confusing, but think of a "global" variable - we want to be able to dynamically render a list of "mediums" for media. Imagine that we have control logic and render logic that depends on hardcoded types, we need to do extra work to add a new medium - add it to the HTML and the javascript handlers and such.
+- In the root module, we can "provide" this value type list as a provider
+	- we must give it a name, like `lookupListToken` that allows us to reference this specific list, and we tell Angular to attach the value in the `lookupLists` constant to this provided value
+```tsx
+//media-item-form.component.ts
+import {..., Inject} from '@angular/core'
+
+export class MediaItemForm {
+	constructor(
+		private formBuilder: FormBuilder, 
+		private mediaService: MediaItemService,
+		@Inject('lookupListToken') public lookupLists,
+	) {}
+}
+```
+- using the `@Inject` decorator, we can *decorate* a parameter to the constructor to use a specific provided service.
+	- In this case, we pass the name of the lookup lists that contain our value types.
+	- Similar to how we use the `private` modifier for `formBuilder` and `mediaService`, we use the **`public`** modifier for this injected, provided value 
+		- this is because *public* scoped properties *can* be used in the "template" files.
+
+```tsx
+//media-item-form.component.html
+<select name="medium" formControlName="medium">
+	<option 
+		*ngFor="let token of lookupLists.mediums"
+		[value]="token"
+	> {{ token }} </option>
+</select>
+```
+- heading over to the template file, we can then change the rendering of the `<select>` to use the value types stored in the lookup lists - making this rendering dynamic to the options set "globally".
+	- The way it does this is that `lookupLists` is a public-scoped property, and the list that we want to render is actually the `.mediums` property.
+	- So, we use the `*ngFor` directive to iterate over items in this list, using the block-scope variable of `token` (or whatever we want - the example uses `medium`) to use the actual *value*.
+	- we bind the value attribute of the `<option>` element so our form can know the value of selected options correctly, and the displayed label is a template evaluation of the token as well.
+
+### Avoiding String Literals
+- Using string literals as "names" for these providable things is a risk because it's a hardcoded way to abstract something - and is harder for Angular or intellisense to help enforce these types
+- We can use **Injection Tokens** to work around this:
+
+```tsx
+// NEW: providers.ts
+import {InjectionToken} from '@angular/core'
+
+export const lookupListToken = new InjectionToken('lookupListToken')
+
+export const lookupLists = {
+	mediums: ['Movies', 'Series']
+}
+
+//app.module.ts
+import {lookupListToken, lookupLists} from './providers.ts'
+@NgModule({
+	imports: [],
+	declarations: [],
+	providers: [
+		{
+			provide: lookupListToken, useValue: lookupLists
+		}
+	]
+})
+export class AppComponent {}
+
+//media-item-form.component.ts
+constructor(
+		private formBuilder: FormBuilder, 
+		private mediaService: MediaItemService,
+		@Inject(lookupListToken) public lookupLists,
+	) {}
+```
+- We can hoist up the string literal value into a *providers* file (or wherever, honestly), and supply it as an argument to the `InjectionToken` class, which is put into the `lookupListToken` constant.
+- Now, in our *module* and *components*, we can use the `InjectionToken` constant that we import from the providers file, and don't need to use a string literal.
+
+# HTTP Module and providing a Service
+
+## `HttpClientModule`
+- is an *optional* module that allows us to create HTTP calls
+
+```tsx
+import { HttpClientModule } from '@angular/common/http'
+
+@NgModule({
+	 imports: [
+		 HttpClientModule
+	 ]
+})
+export class AppComponent {}
+```
+
+## `HttpXhrBackend` 
+- is the *backend* code that handles *requests* to an endpoint - like a server.
+- because DI (dependency injection) is such an important part of Angular, we can create a "mock" backend service that receives calls to its endpoint. The point being is that we can "intercept" calls to `HttpXhrBackend` and use a mock backend for development purposes
+
+```tsx
+import { HttpClientModule, HttpXhrBackend } from '@angular/common/http'
+import {MockXHRBackend} from './mock-xhr-backend'
+
+@NgModule({
+	 imports: [
+		 HttpClientModule
+	 ],
+	 providers: [
+		 {provide: HttpXhrBackend, useClass: MockXHRBackend}
+	 ]
+})
+export class AppComponent {}
+```
+- since we set up this provider code, anytime a component asks for an instance of `HttpXhrBackend`, it receives an instance of `MockXHRBackend` instead.
+
+## `HttpClient`
+- A *service* for making HTTP requests, and handles HTTP responses
+```tsx
+//media-item.service.ts
+import {HttpClient} from '@angular/common/http'
+
+export class MediaItemService {
+	constructor(private http: HttpClient) {}
+
+	get(){
+		//return this.mediaItems
+		return this.http.get('mediaitems')
+	}
+}
+```
+- We use constructor injection to use a `HttpClient` service instance in the property `http`
+- our `get()` function now uses the `.get` method of the HttpClient service to make a request to a backend endpoint  `mediaitems`.
+	- HttpClient then uses the HttpXhrBackend (which is really hooked up to `MockXHRBackend`) to make a request to this backend endpoint
+- the `.get` method, returns an "`Observable`" object of HTTP responses, so we need to "parse" out the list of media items to return, and NOT the HTTP response
+	- we can use `rxjs`'s `map` operator:
+
+```tsx
+//media-item.service.ts
+import { map } from 'rxjs/operators'
+
+export class MediaItemService {
+	 get(){
+		return this.http.get<MediaItemResponse>('mediaitems')
+			.pipe(map(response => { 
+				return response.mediaItems
+			}))
+	}
+}
+
+//create a typescript type to describe the shape of a media item
+interface MediaItem {
+	id: number,
+	name: string,
+	medium: string,
+	//...
+}
+
+interface MediaItemResponse {
+	mediaItems: MediaItem[]
+}
+```
+- In the API service that we created, we need to deal with the `Observable` using the `map` method - but we can only do so by "piping" the result of `.get` into a chain of operators.
+	- In this `.pipe`, we pass operators to perform transformations of the received HTTP response. The `.map` method from `rxjs` allows us to parse the response, then return the `.mediaItems` property of the response 
+- Because the backend API is decoupled from the frontend - TypeScript doesn't know the types of the incoming objects. We create interfaces for the items and responses to help TypeScript creating typing information to propagate throughout our components
+
+```tsx
+//media-item-list.component.ts
+export class MediaItemList implements OnInit {
+	ngOnInit() {
+		this.mediaItemService.get()
+			.subscribe(mediaItems => {
+				this.mediaItems = mediaItems
+			})
+	}
+}
+```
+- This step is extremely important, because the `.get` method creates a **cold** observable - it "prepares" this endpoint to be called, and is not actually called until we `.subscribe` to it's result.
