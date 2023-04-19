@@ -985,4 +985,412 @@ export class MediaItemList implements OnInit {
 	}
 }
 ```
-- This step is extremely important, because the `.get` method creates a **cold** observable - it "prepares" this endpoint to be called, and is not actually called until we `.subscribe` to it's result.
+- This step is extremely important, because the `.get` method creates a **cold** observable - it "prepares" this endpoint to be called, and is not actually called until `.subscribe` is called on the resulting `get` service API
+
+### Next, Error, Complete
+- An observable has THREE events associated with the data stream:
+	- Next
+		- new item in the data stream
+	- Error
+		- error occurred, stream stops, arrives with an error messages
+	- Complete
+		- stream complete, no more data to emit (will *not* emit)
+- the `.subscribe` method takes up to THREE callbacks, one for *each* event for its handling
+	- we *don't need to* provide all 3 
+	- once we program the `.subscribe` API with a "next" callback, this callback sets the public property on the class called `mediaItems` to the resulting data from the observable.
+
+## URL Search Parameters in HTTP
+```tsx
+//media-item.service.ts
+export class MediaItemService {
+	const getOptions = {
+		params: { medium }
+	}
+
+	 get(medium){
+		return this.http.get<MediaItemResponse>('mediaitems', getOptions)
+			.pipe(map(response => { 
+				return response.mediaItems
+			}))
+	}
+}
+```
+- If we want to support sending a request with URL parameters to our backend, mock or real, we pass an options object to the `http.get` method with the `params` property, which is its own object with property "medium"
+
+```tsx
+//media-item-list.component.ts
+export class MediaItemList implements OnInit {
+
+	medium = '';
+	mediaItems: mediaItem[];
+
+	constructor(private mediaItemService: MediaItemService) {}
+
+	ngOnInit() {
+		this.getMediaItems(this.medium)
+	}
+
+	getMediaItems(medium: string) {
+		this.medium = medium
+		this.mediaItemService.get(medium)
+			.subscribe(mediaItems => {
+				this.mediaItems = mediaItems
+			})
+	}
+}
+```
+- as for the components that actually use the service, since we added the a parameter to the `get` service API we created, we pass a string indicating the current "medium", which is the empty string by default
+	- meaning that if no medium is supplied, it's identical to not providing any URL params, getting *all* items of *any* medium
+
+# HTTP POST, PUT, DELETE
+```tsx
+//media-item.service.ts
+
+export class MediaItemService {
+	const getOptions = {
+		params: { medium }
+	}
+
+	 get(medium){
+		return this.http.get<MediaItemResponse>('mediaitems', getOptions)
+			.pipe(map(response => { 
+				return response.mediaItems
+			}))
+	}
+
+	add(mediaItem){
+		return this.http.post('mediaitems', mediaItem)
+	}
+
+	delete(mediaItem){
+		return this.http.delete(`mediaItems/${mediaItem.id}`)
+	}
+}
+```
+- using POST, PUT, and DELETE is similar to using GET, but instead of receiving data back, we are strictly sending data, and requesting an action be done *other* than strictly reading
+```tsx
+//media-item-form.component.ts
+onSubmit(mediaItem) {
+	this.mediaItemService.add(mediaItem)
+		.subscribe()
+}
+
+//media-item-list.component.ts
+onMediaItemDelete(mediaItem){
+	this.mediaItemService.delete(mediaItem)
+		.subscribe(() => {
+			this.getMediaItems(this.medium)
+		})
+}
+```
+- we must still *subscribe* to the Observable APIs to invoke them
+- when an item is *deleted*, we invoke the `.delete` service API we created, which invokes the `http.delete` method with an endpoint - which is specified as an ID'ed endpoint.
+	- on the asynchronous completion of this deletion, the subscribe interface allows us to invoke a callback, which we can use to re-fetch items because we modified them
+- however, for an item submission - when we `.add`, which invokes `http.post`, it *does* create a new item in the backend, but this submission functionality is *seperate* from the "list" functionality, which handles all of the getting, so we cannot just call `getMediaItems`
+	- this will be covered in the [[#Routing]] section
+
+## HTTP Errors
+- use the RxJS operator `catchError` within a pipe
+```tsx
+import {HttpClient, HttpErrorResponse} from '@angular/common/http'
+import { map, catchError } from 'rxjs/operators'
+import { throwError } from 'rxjs'
+
+export class MediaItemService {
+	get(medium){
+		return this.http.get<MediaItemResponse>('mediaitems', getOptions)
+			.pipe(
+				map(response => { 
+					return response.mediaItems
+				}),
+				catchError(this.handleError)
+			)
+	}
+
+
+	private handleError(error: HttpErrorResponse) {
+		// DO SOMETHING (error.message)
+		return throwError('A data error occurred, please try again.')
+	}
+}
+
+
+```
+
+# Routing
+- Routing in Angular requires that we have a base element with the "root" of our application. This element should be a child of the `<head>` section:
+
+```html
+<head>
+	<base href='/'>
+</head>
+```
+
+## Creating Routes
+```tsx
+//app.routing.ts
+import { Routes } from '@angular/router'
+import { MediaItemFormComponent } from './media-item-form.component'
+import { MediaItemListComponent } from '...'
+
+const appRoutes: Routes = [
+	{ path: 'add', component: MediaItemFormComponent },
+	{ path: ':medium', component: MediaItemListComponent },
+	{ path: '', redirectTo: 'all', pathMatch: 'full'}
+];
+```
+- Creating routes does not require anything special, we only import the Routes type so that our application has a better understanding of what we are trying to create
+- in this list of routes, we pass object literals to describe a *URL Path*, and which component to associate to that path
+	- these paths build on the *base* route
+	- these paths are *relative* to the base
+		- thus, 'add' means `/add`, which should render the MediaItemFormComponent
+		- the `:medium` path matcher means that we are creating a dynamic route parameter, with the name of medium.
+		- the `''` is the default route `/`
+			- when we try and use the default (root/base) route, our rule setups a `redirectTo` property, which will redirect to `/all`. The `pathMatch` property set to "full" means that the *full* URL path must be the default route for this rule to apply.
+	- *order matters*, meaning that the order within the list creates priority for certain paths. For example, if the `:medium` pattern was *above* `add`, then we'd never reach the `/add` route, because it would think that "add" is a binding to the `:medium` parameter.
+
+```tsx
+//app.routing.ts
+import { Routes, RouterModule } from '@angular/router'
+const appRoutes = [
+	//...
+]
+
+export const routing = RouterModule.forRoot(appRoutes)
+```
+- unlike `FormsModule` or `BrowserModule`, we did not import the `RouterModule` in our root app module directly. Instead, we import it into our routing *file*, and call the `forRoot` static method from `RouterModule`, providing the array of routing objects we created, and exporting the result of this function.
+```tsx
+//app.module.ts
+import { routing } from './app.routing'
+
+@NgModule({
+	imports: [
+		//...,
+		routing
+	],
+})
+```
+- Now, we import that `routing` export and set it as a module import. 
+- Under the hood, the `RouterModule` has all the module-related things, like components, directives, and services - and we import and build on top of the module using our custom routes.
+
+## Integrating Routes
+- In order to use routes, we need to use the components and directives that comes from the `RouterModule` that we are using.
+- What a router does, is it listens to the *route* of the browser URL for changes, and we use a router outlet to conditionally render:
+```tsx
+//app.component.html
+<section>
+	<header>
+	</header>
+	<router-outlet></router-outlet>
+</section>
+```
+- `router-outlet` is a *structural directive*, not a component. It tells Angular to hook into the routing rules at this specific place in the HTML template.
+
+## Router Links
+- use the `routerLink` directive to create a *link* for to a specific route:
+```tsx
+<nav>
+	<a routerLink="/"></a>
+	<a routerLink="/Movies"></a>
+	<a routerLink="/Series"></a>
+</nav>
+```
+- using `routerLink` allows us to do 2 simultaneous things: attach an `href` to an anchor, and tell Angular that these links start path changes, and to do router changes with these links.
+
+## Route Parameters
+- use the `ActivatedRoute` service to get information about the *currently* activated route.
+```tsx
+import { ActivatedRoute } from '@angular/router'
+
+export class MediaItemList implements OnInit {
+	constructor(
+		private mediaItemService: MediaItemServce,
+		private activatedRoute: ActivatedRoute
+	) {}
+
+	ngOnInit(){
+		this.activatedRoute.paramMap
+			.subscribe(paramMap => {
+				let medium = paramMap.get('medium');
+				if(medium.toLowerCase() === 'all') medium = ''
+				
+				this.getMediaItems();
+			})
+	}
+}
+```
+- as per typical services, we can use constructor injection to create a private property for us
+- the activated route passes a `paramMap` property to us, which is an `Observable` (just like in HTTP! - this is because an Observable is a continuous data stream)
+	- so, in order to actually "activate" it, we invoke `.subscribe`, and pass a callback for `next` events.
+	- because we set up the routing for this project to have the `/all` route, it *will* get picked up as a route parameter
+	- so, we want to parse the `medium` parameter and check if it is a valid value for our purpose
+
+## Programmatic Routing
+- Instead of routing routes and links to be within *HTML templates*, we can use the Router class to route and navigate:
+
+```tsx
+import { Router } from '@angular/router'
+
+export class MediaItemForm implements OnInit {
+	constructor(
+		private formBuilder: FormBuilder,
+		//...,
+		private router: Router
+	) {}
+
+	onSubmit(mediaItem) {
+		this.mediaItemService.add(mediaItem)
+			.subscribe(() => {
+				this.router.navigate(['/', mediaItem.medium])
+			})
+	}
+}
+```
+- using the instantiated service property `router`, we invoke `.navigate`
+	- in order to use `.navigate`, we pass it a link parameters array
+	- thus, it navigates to `/:medium`, when we submit the form based on the submitted item's medium
+
+## Routing and "feature" modules
+- When we start implementing more features, we're going to want to create sub-modules that organize our feature sets.
+- however, in order to use structural directives like `ngIf`, we need `BrowserModule` - but that should only be imported in the *root* module.
+	- the solution is to import the *common* module, which is auto-imported by `BrowserModule`, so we can just import those specific things instead
+```tsx
+//new-item.module.ts
+import { CommmonModule } from '@angular/common'
+import { ReactiveFormsModule } from '@angular/forms'
+import MediaItemFormComponent from '...'
+import { newItemRouting} from './new-item.routing'
+
+@NgModule({
+	imports: [
+		CommonModule, ReactiveFormsModule, newItemRouting
+	],
+	declarations: [
+		MediaItemFormComponent
+	]
+})
+export class NewItemModule {}
+
+//new-item.routing.ts
+import { Routes, RouterModule } from '@angular/router'
+import { MediaItemFormComponent } from './...'
+const newItemRoutes: Routes = [
+	{ path: 'add', component: MediaItemFormComponent }
+]
+export const newItemRouting = RouterModule.forChild(newItemRoutes)
+
+//app.module.ts
+import { NewItemModule } from './new-item/new-item.module'
+@NgModule({
+	imports: [
+		//...
+		NewItemModule
+	]
+})
+```
+- The point here is that we *abstract* all our feature's imports and functionality into this module specifically.
+- we can also create feature-specific routing, by doing a very similar approach to routing with our feature's components
+	- the difference here is that we want to use `.forChild` from the router module because we are creating routes for child modules.
+- lastly, we need to import the new module into the root and set it as an import in the `NgModule`
+
+## Lazy Loading Modules
+- Feature modules are great because they physically organize feature-specific code into its own folders, files, modules, and imports.
+	- They are also great, because not all features and code are flat-implemented within the root module, which allows us to modulate how we import and load features
+	- lazy loading is the ability to only deliver the necessary modules/functionality when they are *needed*. If the base "state" does not invoke certain features, we don't need to load them until they are strictly needed.
+		- the payoff depends on the complexity of the application and features, and can have big impact on initial loading times
+- Whenever we include a module in the `imports: []` array within the *root* `NgModule` metadata, Angular sees that and includes it in the total bundle build.
+	- However, that makes it *not* lazy loaded - in order to lazy load, we need to import modules differently, so that Angular can *bundle* these modules and features seperately, to be delivered only when their routes are invoked
+
+```tsx
+//app.module.ts
+// REMOVE ALL IMPORTS AND REFERENCES TO THE MODULES TO LAZY LOAD -->
+
+//app.routing.ts
+const appRoutes: Routes = [
+	{ 
+		path: 'add', 
+		loadChildren: () => {
+			import('./new-item/new-item.module')
+				.then(m => return m.NewItemModule)
+		} 
+	},
+	{ path: ':medium', component: MediaItemListComponent },
+	{ path: '', redirectTo: 'all', pathMatch: 'full'}
+];
+
+//new-item.routing.ts
+const newItemRoutes: Routes = [
+	{ 
+		path: '', //WAS 'add'
+		component: MediaItemFormComponent
+	}
+]
+```
+- Lazy loading happens all in the routing, because we move the child's main routing to the root module's routing
+	- instead of supplying a component, we use the `loadChildren` property, passing a callback to an import of the module we would like to lazy load
+	- the import returns a *promise*, so we need to handle the promise by using `.then`, and returning the `NewItemModule` module *object* that we extracted
+- Because we put the `'add'` routing path into the root module as a lazy loading path, we need to remove it from the feature routing - and replace that main route with the default route
+	- otherwise, the route would look like `/add/add`
+
+# Styling
+- We can control *how* Angular handles per-component styles by using the `ViewEncapsulation` modes
+```tsx
+import { Component, ViewEncapsulation } from '@angular/core'
+
+@Component({
+	selector: '...',
+	templateUrl: '...',
+	styleUrls: ['...'],
+	encapsulation: ViewEncapsulation.None
+	//encapsulation: ViewEncapsulation.Emulated
+	//encapsulation: ViewEncapsulation.ShadowDom
+	//encapsulation: ViewEncapsulation.Native (deprecated by ShadowDom)
+})
+```
+- the `ViewEncapsulation` is a typescript ENUM that has THREE types (technically 4)
+	- None
+		- don't do anything special modular enhancement
+		- the styles in either URLs and in-line are put in the global styles *exactly* the same way you write it
+	- Emulated (DEFAULT)
+		- *emulate* the ShadowDom on CSS build
+	- ShadowDom
+		- render the way the ShadowDom does, but this is not supported in all browsers
+	- Native (deprecated, use ShadowDom)
+
+## Shadow DOM & Emulated
+- The point of using the Shadow DOM is to scope CSS to a *block* of HTML, so that it only applies to a specific set of HTML, and not the whole project
+- Angular's default mode of style encapsulation is that it will *emulate* the Shadow DOM to scope CSS rules to the component, and all children of the component
+	- if we remember back, Angular "shims" the CSS with unique component-based IDs 
+
+### Why?
+- Because we then only need to write CSS in a way that's unique to the *component*, and not the entire project. We can write general CSS rather than worrying about replacing those rules - components can be written in simple CSS that selects elements rather than classes, etc.
+
+## Custom Elements
+- Since we are creating "custom" elements using selectors, the browser does not help apply "block-level" styles
+- for example, we can add a "host" pseudo-selector in our styles to add block-level styles to selectors of certain types
+```tsx
+@Component({
+	selector: 'mw-category-list',
+	template: ``,
+	styles: [
+		`
+			:host{
+				display: block;
+				margin-bottom: 20px;
+			}
+
+			:host-context(.medium-movies) span {
+				background-color: #...
+			}
+
+			:host-context(.medium-series) span {
+				background-color: #...
+			}
+		`
+	]
+})
+```
+- the `:host` psuedo-selector allows us to select the *host* element, being that of elements `<mw-category-list>` in this case.
+- likewise, the `:host-context` pseudo-selector allows us to apply styles based on the *context* of the host element
+	- it will match the *selectors* that we pass into the *function* call of any ANCESTORS of this host component, meaning any *parents* of it.
+	- any parent that has a `<mw-category-list>` component nested in it, will be selected by this context
