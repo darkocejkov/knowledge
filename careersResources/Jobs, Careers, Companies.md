@@ -1,3 +1,6 @@
+# Reviews, Ratings
+https://www.repvue.com
+https://www.glassdoor.com
 
 # Tech Companies & Trends
 https://www.crunchbase.com
