@@ -132,18 +132,47 @@ The NextJS application can be distributed over 3 types of networks:
 
 # NextJS Documentation
 
-## Page Routing
+## Routing
 URL Routing is pre-configured in NextJS and is available very easily. In any `create-next-app` applications, a `pages` folder comes pre-filled with the `index.js` file which exposes the ROOT (`/`) to the attached file.
 > To create any other pages, we simply create new *files*, whose FILE NAME is what the new route depends on.
 > Likewise, if we want to create *subfolders*, we very much can, which let us create *subroutes* easily
 > ex. (pages) > ("Travel") > ("Food") > ("Indian") ("Chinese") ("French") ("Canadian")
 > > /travel/food/indian vs. travel/food/chinese vs ...
 
+Routing URL segments maps to the file system structure. The file structure is one within the `/pages` folder within the project. Any *files* are routed as segments, directory OR file. The difference is that the only way that routes are "publically accessible" is if the directory has a leaf file called `page.js` - which exposes the UI to render *exclusive* to that route. If a directory within the `/pages` directory has no direct child as a `page.js` file, then it is inaccessible as a route.
+
+### Layouts
+Layouts are *shared* UI between all the routes that is:
+	- sibling to
+	- parent to
+
+```
+pages/ 
+├── page.js 
+├── layoutA.js 
+└── signup/ 
+	├── page.js 
+	└── layoutB.js
+```
+- LayoutA wraps and is sibling to UI, which is shared between all subdirectory UI and the direct root UI.
+- Depending on how *routes are **GROUPED***, the layouts may/not apply in a default "global" manner based on file-structure.
+- Passing data *between* parent layouts and its children is *not* possible.
+	- you *can* fetch the same thing and React's runtime will de-dupe the request.
+
+> note: the "root" layout is required. Layouts must be called `layout.js` and pages called `page.js`
+
 Just like in `react-router-dom`, we can't just use normal < a > tags to navigate because it does not work well with SPAs. In order to navigate *between* "pages" we should be using the `Link` component provided by Next.
 
 Next also provides an additional format to use if we would like to define *dynamic* routes based on parameter "queries". To routes and pages like this, we can create filenames with the format `[route].js`. This defines this "route" as having a dynamic query attached to it.
 
 > To use the *dynamic value* of the route at runtime, we need to the the `useRouter` prebuilt hook to access the `router` state, which we can destructure to give us the *token name* that our filename describes.
+
+### Templates
+Templates are similar to Layouts, but are meant to be "temporary". On navigation, a NEW instance of the template component is mounted (does NOT perserve state). 
+- Prefer Layouts unless you *need* templates for a specific reason.
+
+### Metadata
+-
 
 ## Data Fetching & Pre-rendering
 NextJS comes with plenty of options when it comes to fetching data from servers. We can do client-side data fetching with React as per-usual, or `useSWR` for some advanced features.
